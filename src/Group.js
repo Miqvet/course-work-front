@@ -4,8 +4,25 @@ import { InputText } from 'primereact/inputtext';
 import { Dialog } from 'primereact/dialog';
 import { Menubar } from 'primereact/menubar';
 
+import {format, getDay, parse, startOfWeek} from "date-fns";
+import enUS from "date-fns/locale/en-US";
+
 import './Group.css'; // Подключаем CSS для стилей
 import TasksPage from "./TaskPage";
+import AdminPanel from "./AdminPanel";
+
+import {Calendar, dateFnsLocalizer} from "react-big-calendar";
+
+
+const locales = { 'en-US': enUS };
+const localizer = dateFnsLocalizer({
+    format,
+    parse,
+    startOfWeek: () => startOfWeek(new Date(), { weekStartsOn: 0 }),
+    getDay,
+    locales
+});
+
 
 const UsersList = ({ users }) => {
     // Подсчет статистики
@@ -54,9 +71,28 @@ const UsersList = ({ users }) => {
     );
 };
 
-
+const CalendarPage = ({events}) => {
+    return (
+        <Calendar
+            localizer={localizer}
+            events={events}
+            startAccessor="start"
+            endAccessor="end" style={{ height: 600 }}
+        />
+    );
+}
 
 const Group = () => {
+    const [events] = useState([
+        { title: 'Project Kickoff', start: new Date(2025, 0, 1, 10, 0), end: new Date(2025, 0, 1, 12, 0) },
+        { title: 'Team Meeting', start: new Date(2025, 0, 2, 14, 0), end: new Date(2025, 0, 2, 15, 0) },
+        { title: 'Submit Report', start: new Date(2025, 0, 3, 9, 0), end: new Date(2025, 0, 3, 11, 0) },
+        { title: 'Client Presentation', start: new Date(2025, 0, 4, 13, 0), end: new Date(2025, 0, 4, 14, 30) },
+        { title: 'Code Review', start: new Date(2025, 0, 5, 16, 0), end: new Date(2025, 0, 5, 17, 0) },
+        { title: 'Workshop', start: new Date(2025, 0, 6, 10, 0), end: new Date(2025, 0, 6, 12, 0) },
+        { title: 'Project Deadline', start: new Date(2025, 0, 7, 17, 0), end: new Date(2025, 0, 7, 18, 0) },
+    ]);
+
     const users = [
         { name: 'Пользователь 1', role: 'Администратор' },
         { name: 'Пользователь 2', role: 'Участник' },
@@ -91,8 +127,32 @@ const Group = () => {
 
     const menuItems = [
         { label: 'Главная', icon: 'pi pi-briefcase', command: () => setActiveView('tasks') },
-        { label: 'Календарь', icon: 'pi pi-calendar', command: () => setActiveView('calendar') }
+        { label: 'Календарь', icon: 'pi pi-calendar', command: () => setActiveView('calendar') },
+        { label: 'Настройки', icon: 'pi pi-spin pi-cog', command: () => setActiveView('settings') }
     ];
+
+    const [group, setGroup] = useState({
+        id: 1,
+        name: "Команда мечты",
+        members: [
+            { id: 1, name: "Иван Иванов", role: "User" },
+            { id: 2, name: "Мария Петрова", role: "Administrator" },
+            { id: 3, name: "Сергей Сидоров", role: "User" },
+        ],
+    });
+
+    const handleUpdateGroup = (updatedGroup) => {
+        setGroup(updatedGroup);
+    };
+
+    const handleAssignTask = (task, member) => {
+        alert(`Задача "${task.title}" назначена участнику "${member.name}"`);
+    };
+
+    const handleDeleteTask = (taskId) => {
+        setTasks(tasks.filter((task) => task.id !== taskId));
+        alert("Задача удалена!");
+    };
 
     const addTask = () => {
         if (newTask.title && newTask.deadline) {
@@ -175,18 +235,25 @@ const Group = () => {
                         <UsersList users={users} style={{width: '300px'}}/>
                     </div>
                 );
-            case 'members':
-                return (
-                    <div className="groupe-container">
-                        <h3>Участники</h3>
-                        <UsersList users={users}></UsersList>
-                    </div>
-                );
             case 'calendar':
                 return (
                     <div className="groupe-container">
                         <h3>Календарь</h3>
-                        {/* Логика календаря */}
+                        <CalendarPage events={events}/>
+                    </div>
+                );
+            case 'settings':
+                return (
+                    <div className="groupe-container">
+                        <h2>Панель администратора</h2>
+                        <AdminPanel
+                            group={group}
+                            tasks={tasks}
+                            members={group.members}
+                            onUpdateGroup={handleUpdateGroup}
+                            onAssignTask={handleAssignTask}
+                            onDeleteTask={handleDeleteTask}
+                        />
                     </div>
                 );
             default:

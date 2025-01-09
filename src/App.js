@@ -43,7 +43,7 @@ const App = () => {
                 <div className="content-container">
                     <Routes>
                         <Route path="/" element={<MainPage />} />
-                        <Route path="/all-tasks" element={<TasksPage />} />
+                        <Route path="/all-tasks" element={<AllTasksPage  />} />
                         <Route path="/accounts" element={<AccountsPage />} />
                         <Route path="/sign-in" element={<AuthForm />} />
                         <Route path="/groups" element={<Groups />} />
@@ -67,6 +67,15 @@ const Sidebar = ({ menuItems }) => {
     );
 };
 
+const AllTasksPage = ({tasks}) => {
+    return (
+        <div className="main-page">
+            <h1>Все ваши задачи</h1>
+            <TasksPage></TasksPage>
+        </div>
+    );
+}
+
 const MainPage = () => {
     const [events] = useState([
         { title: 'Project Kickoff', start: new Date(2025, 0, 1, 10, 0), end: new Date(2025, 0, 1, 12, 0) },
@@ -87,12 +96,8 @@ const MainPage = () => {
                     events={events}
                     startAccessor="start"
                     endAccessor="end"
-                    style={{ height: 500 }}
+                    style={{ height: 600 }}
                 />
-            </div>
-            <div className="action-buttons">
-                <Button label="Create Group" className="p-button-success" />
-                <Button label="Join Group" className="p-button-primary" />
             </div>
         </div>
     );
