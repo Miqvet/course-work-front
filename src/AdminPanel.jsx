@@ -5,6 +5,11 @@ import { Button } from "primereact/button";
 import { Dropdown } from "primereact/dropdown";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
+import {Card} from "primereact/card";
+
+
+
+
 
 const AdminPanel = ({ group, tasks, members, onUpdateGroup, onDeleteTask, onCreateTask, onUpdateTask, onDeleteMember }) => {
     const [groupDescription, setGroupDescription] = useState(group.description);
@@ -23,10 +28,26 @@ const AdminPanel = ({ group, tasks, members, onUpdateGroup, onDeleteTask, onCrea
     const [categoryDialogVisible, setCategoryDialogVisible] = useState(false);
     const [newCategory, setNewCategory] = useState({ name: "", description: "" });
 
+    const [commentsDialogVisible, setCommentsDialogVisible] = useState(false);
+
     const [categories, setCategories] = useState([
         { id: 1, name: "Категория 1", description: "Описание категории 1" },
         { id: 2, name: "Категория 2", description: "Описание категории 2" },
     ]);
+
+    const comments = [
+        { createdAt: "2025-01-09T10:30:00", text: "This task needs to be completed by tomorrow." },
+        { createdAt: "2025-01-09T14:45:00", text: "Ensure to verify all details before submission." },
+        { createdAt: "2025-01-10T09:15:00", text: "Task review completed, ready for final steps." },
+        { createdAt: "2025-01-09T10:30:00", text: "This task needs to be completed by tomorrow." },
+        { createdAt: "2025-01-09T14:45:00", text: "Ensure to verify all details before submission." },
+        { createdAt: "2025-01-10T09:15:00", text: "Task review completed, ready for final steps." },
+        { createdAt: "2025-01-09T10:30:00", text: "This task needs to be completed by tomorrow." },
+        { createdAt: "2025-01-09T14:45:00", text: "Ensure to verify all details before submission." },
+        { createdAt: "2025-01-10T09:15:00", text: "Task review completed, ready for final steps." },
+
+    ];
+
     const [taskForm, setTaskForm] = useState({
         category: null,
         title: "",
@@ -112,6 +133,29 @@ const AdminPanel = ({ group, tasks, members, onUpdateGroup, onDeleteTask, onCrea
             />
         </Dialog>
     );
+
+    const renderCommentsDialog = () => {
+        return (
+            <Dialog
+                header={`Comments for Task`}
+                visible={commentsDialogVisible}
+                style={{ width: "50vw" }}
+                onHide={() => setCommentsDialogVisible(false)}
+            >
+                <div className="comments-container">
+                    {comments.map((comment, index) => (
+                        <Card
+                            key={index}
+                            title={new Date(comment.createdAt).toLocaleString()}
+                            style={{ marginBottom: "1rem" }}
+                        >
+                            <p>{comment.text}</p>
+                        </Card>
+                    ))}
+                </div>
+            </Dialog>
+        );
+    };
 
     const renderCategoryDialog = () => (
         <Dialog
@@ -461,6 +505,15 @@ const AdminPanel = ({ group, tasks, members, onUpdateGroup, onDeleteTask, onCrea
                                 className="p-button-danger"
                                 onClick={() => onDeleteTask(task.id)}
                             />
+                            <Button
+                                label=""
+                                icon="pi pi-comments"
+                                className="p-button-help"
+                                onClick={() => {
+                                    setSelectedTask(task);
+                                    setCommentsDialogVisible(true)
+                                }}
+                            />
                         </div>
                     )}
                 />
@@ -471,6 +524,7 @@ const AdminPanel = ({ group, tasks, members, onUpdateGroup, onDeleteTask, onCrea
             {renderCreateTaskDialog()}
             {renderCategoryDialog()}
             {renderAssignTaskDialog()}
+            {renderCommentsDialog()}
         </div>
     );
 };
