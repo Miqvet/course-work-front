@@ -8,7 +8,8 @@ import './AuthForm.css';
 const AuthForm = () => {
     const [isLogin, setIsLogin] = useState(true); // Переключатель между авторизацией и регистрацией
     const [formData, setFormData] = useState({
-        username: '',
+        firstname: '',
+        lastname: '',
         password: '',
         email: ''
     });
@@ -20,7 +21,7 @@ const AuthForm = () => {
 
     const handleSubmit = () => {
         if (isLogin) {
-            console.log('Logging in with:', formData);
+            console.log('Logging in with:', { email: formData.email, password: formData.password });
         } else {
             console.log('Registering with:', formData);
         }
@@ -28,7 +29,7 @@ const AuthForm = () => {
 
     const toggleForm = () => {
         setIsLogin(!isLogin);
-        setFormData({ username: '', password: '', email: '' }); // Сбрасываем данные
+        setFormData({ firstname: '', lastname: '', password: '', email: '' }); // Сбрасываем данные
     };
 
     return (
@@ -36,29 +37,43 @@ const AuthForm = () => {
             <Card style={{ width: '400px', borderRadius: '12px', textAlign: 'center' }}>
                 <h2>{isLogin ? 'Вход' : 'Регистрация'}</h2>
                 {!isLogin && (
-                    <div className="p-field">
-                        <span className="p-float-label">
-                            <InputText
-                                id="email"
-                                name="email"
-                                value={formData.email}
-                                onChange={handleInputChange}
-                                style={{ width: '100%' }}
-                            />
-                            <label htmlFor="email">Email</label>
-                        </span>
-                    </div>
+                    <>
+                        <div className="p-field">
+                            <span className="p-float-label">
+                                <InputText
+                                    id="firstname"
+                                    name="firstname"
+                                    value={formData.firstname}
+                                    onChange={handleInputChange}
+                                    style={{ width: '100%' }}
+                                />
+                                <label htmlFor="firstname">Имя</label>
+                            </span>
+                        </div>
+                        <div className="p-field">
+                            <span className="p-float-label">
+                                <InputText
+                                    id="lastname"
+                                    name="lastname"
+                                    value={formData.lastname}
+                                    onChange={handleInputChange}
+                                    style={{ width: '100%' }}
+                                />
+                                <label htmlFor="lastname">Фамилия</label>
+                            </span>
+                        </div>
+                    </>
                 )}
                 <div className="p-field">
                     <span className="p-float-label">
                         <InputText
-                            id="username"
-                            name="username"
-                            value={formData.username}
+                            id="email"
+                            name="email"
+                            value={formData.email}
                             onChange={handleInputChange}
                             style={{ width: '100%' }}
                         />
-                        <label htmlFor="username">Имя пользователя</label>
+                        <label htmlFor="email">Email</label>
                     </span>
                 </div>
                 <div className="p-field">
@@ -93,3 +108,4 @@ const AuthForm = () => {
 };
 
 export default AuthForm;
+

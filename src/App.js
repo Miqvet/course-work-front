@@ -105,9 +105,9 @@ const MainPage = () => {
 
 const AccountsPage = () => {
     const [userDetails, setUserDetails] = useState({
-        username: 'johndoe',
-        email: 'johndoe@example.com',
-        fullName: 'John Doe'
+        firstname: 'johndoe',
+        lastname: 'ASDasa',
+        email: 'johndoe@example.com'
     });
 
     const updateUserDetail = (field, value) => {
@@ -119,19 +119,21 @@ const AccountsPage = () => {
             <h1>My Account</h1>
             <div className="account-details">
                 <div className="field">
-                    <label>Username: </label>
-                    <InputText value={userDetails.username} onChange={(e) => updateUserDetail('username', e.target.value)} />
+                    <label>Firstname: </label>
+                    <InputText value={userDetails.firstname}
+                               onChange={(e) => updateUserDetail('firstname', e.target.value)}/>
+                </div>
+                <div className="field">
+                    <label>Lastname: </label>
+                    <InputText value={userDetails.lastname}
+                               onChange={(e) => updateUserDetail('lastname', e.target.value)}/>
                 </div>
                 <div className="field">
                     <label>Email: </label>
-                    <InputText value={userDetails.email} onChange={(e) => updateUserDetail('email', e.target.value)} />
-                </div>
-                <div className="field">
-                    <label>Full Name: </label>
-                    <InputText value={userDetails.fullName} onChange={(e) => updateUserDetail('fullName', e.target.value)} />
+                    <InputText value={userDetails.email} onChange={(e) => updateUserDetail('email', e.target.value)}/>
                 </div>
                 <div className="update-buttons">
-                    <Button label="Save Changes" className="p-button-success" />
+                    <Button label="Save Changes" className="p-button-success"/>
                 </div>
             </div>
         </div>
