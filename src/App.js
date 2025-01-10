@@ -16,6 +16,7 @@ import TasksPage from "./TaskPage";
 import AuthForm from './AuthForm';
 import Groups from "./Groups";
 import Group from "./Group";
+import NotificationTable from "./Notifiacation";
 
 const locales = { 'en-US': enUS };
 const localizer = dateFnsLocalizer({
@@ -34,6 +35,7 @@ const App = () => {
         { label: 'Sign-in', icon: 'pi pi-key', command: () => window.location = '/sign-in' },
         { label: 'Groups', icon: 'pi pi-users', command: () => window.location = '/groups' },
         { label: 'Group', icon: 'pi pi-users', command: () => window.location = '/group' },
+        { label: 'Notification', icon: 'pi pi-bell', command: () => window.location = '/notifications' },
     ];
 
     return (
@@ -48,6 +50,7 @@ const App = () => {
                         <Route path="/sign-in" element={<AuthForm />} />
                         <Route path="/groups" element={<Groups />} />
                         <Route path="/group" element={<Group />} />
+                        <Route path="/notifications" element={<NotificationTable />} /> {/* Новый маршрут */}
                     </Routes>
                 </div>
             </div>
