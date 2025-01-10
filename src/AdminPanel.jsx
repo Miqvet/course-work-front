@@ -378,9 +378,9 @@ const AdminPanel = ({ group, tasks, members, onUpdateGroup, onDeleteTask, onCrea
             </div>
 
             <h3>Участники группы</h3>
-            <DataTable value={members} responsiveLayout="scroll">
-                <Column field="name" header="Имя" />
-                <Column field="role" header="Роль" />
+            <DataTable paginator rows={5} value={members} responsiveLayout="scroll">
+                <Column field="name" header="Имя" sortable/>
+                <Column field="role" header="Роль" sortable/>
                 <Column
                     header="Действия"
                     body={(member) => (
@@ -433,15 +433,15 @@ const AdminPanel = ({ group, tasks, members, onUpdateGroup, onDeleteTask, onCrea
                 onClick={() => setCreateTaskDialogVisible(true)}
             />
 
-            <DataTable value={categories} responsiveLayout="scroll">
-                <Column field="name" header="Название категории" />
-                <Column field="description" header="Описание категории" />
+            <DataTable value={categories} paginator rows={5} responsiveLayout="scroll">
+                <Column field="name" header="Название категории" sortable/>
+                <Column field="description" header="Описание категории" sortable/>
             </DataTable>
 
-            <DataTable value={tasks} responsiveLayout="scroll">
-                <Column field="title" header="Название" />
-                <Column field="description" header="Описание" />
-                <Column field="deadline" header="Дедлайн" />
+            <DataTable value={tasks} paginator rows={5}  responsiveLayout="scroll">
+                <Column field="title" header="Название" sortable/>
+                <Column field="description" header="Описание" sortable/>
+                <Column field="deadline" header="Дедлайн" sortable/>
                 <Column
                     header="Действия"
                     body={(task) => (
