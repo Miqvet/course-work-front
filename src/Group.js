@@ -110,16 +110,16 @@ const Group = () => {
 
     const [activeView, setActiveView] = useState('tasks');
     const [tasks, setTasks] = useState([
-        { id: 1, title: 'Задача 1', description: 'Описание задачи 1', deadline: '2025-01-15', completed: false },
-        { id: 2, title: 'Задача 2', description: 'Описание задачи 2', deadline: '2025-01-20', completed: true },
-        { id: 3, title: 'Задача 1', description: 'Описание задачи 1', deadline: '2025-01-15', completed: false },
-        { id: 4, title: 'Задача 2', description: 'Описание задачи 2', deadline: '2025-01-20', completed: true },
-        { id: 5, title: 'Задача 1', description: 'Описание задачи 1', deadline: '2025-01-15', completed: false },
-        { id: 6, title: 'Задача 2', description: 'Описание задачи 2', deadline: '2025-01-20', completed: true },
-        { id: 7, title: 'Задача 1', description: 'Описание задачи 1', deadline: '2025-01-15', completed: false },
-        { id: 8, title: 'Задача 2', description: 'Описание задачи 2', deadline: '2025-01-20', completed: true },
-        { id: 9, title: 'Задача 1', description: 'Описание задачи 1', deadline: '2025-01-15', completed: false },
-        { id: 10, title: 'Задача 2', description: 'Описание задачи 2', deadline: '2025-01-20', completed: true }
+        { id: 1, title: 'Задача 1', label: "задача 1", description: 'Описание задачи 1', deadline: '2025-01-15', completed: false },
+        { id: 2, title: 'Задача 2', label: "задача 2", description: 'Описание задачи 2', deadline: '2025-01-20', completed: true },
+        { id: 3, title: 'Задача 1', label: "задача 3", description: 'Описание задачи 1', deadline: '2025-01-15', completed: false },
+        { id: 4, title: 'Задача 2',label: "задача 4", description: 'Описание задачи 2', deadline: '2025-01-20', completed: true },
+        { id: 5, title: 'Задача 1',label: "задача 5", description: 'Описание задачи 1', deadline: '2025-01-15', completed: false },
+        { id: 6, title: 'Задача 2',label: "задача 6", description: 'Описание задачи 2', deadline: '2025-01-20', completed: true },
+        { id: 7, title: 'Задача 1',label: "задача 7", description: 'Описание задачи 1', deadline: '2025-01-15', completed: false },
+        { id: 8, title: 'Задача 2',label: "задача 8", description: 'Описание задачи 2', deadline: '2025-01-20', completed: true },
+        { id: 9, title: 'Задача 1',label: "задача 9", description: 'Описание задачи 1', deadline: '2025-01-15', completed: false },
+        { id: 10, title: 'Задача 2',label: "задача 10", description: 'Описание задачи 2', deadline: '2025-01-20', completed: true }
 
     ]);
     const [showTaskDialog, setShowTaskDialog] = useState(false);
@@ -154,17 +154,6 @@ const Group = () => {
         alert("Задача удалена!");
     };
 
-    const addTask = () => {
-        if (newTask.title && newTask.deadline) {
-            setTasks([
-                ...tasks,
-                { id: tasks.length + 1, ...newTask, completed: false }
-            ]);
-            setNewTask({ title: '', description: '', deadline: '' });
-            setShowTaskDialog(false);
-        }
-    };
-
     const toggleTaskCompletion = (taskId) => {
         setTasks(tasks.map((task) => (task.id === taskId ? { ...task, completed: !task.completed } : task)));
     };
@@ -173,44 +162,7 @@ const Group = () => {
         setTasks(tasks.filter((task) => task.id !== taskId));
     };
 
-    const renderTaskDialog = () => (
-        <Dialog
-            header="Создать новую задачу"
-            visible={showTaskDialog}
-            style={{ width: '400px' }}
-            modal
-            onHide={() => setShowTaskDialog(false)}
-        >
-            <div className="p-field">
-                <label htmlFor="title">Название задачи</label>
-                <InputText
-                    id="title"
-                    value={newTask.title}
-                    onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
-                    placeholder="Введите название задачи"
-                />
-            </div>
-            <div className="p-field">
-                <label htmlFor="description">Описание задачи</label>
-                <InputText
-                    id="description"
-                    value={newTask.description}
-                    onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
-                    placeholder="Введите описание задачи"
-                />
-            </div>
-            <div className="p-field">
-                <label htmlFor="deadline">Дедлайн</label>
-                <InputText
-                    id="deadline"
-                    type="date"
-                    value={newTask.deadline}
-                    onChange={(e) => setNewTask({ ...newTask, deadline: e.target.value })}
-                />
-            </div>
-            <Button label="Создать задачу" icon="pi pi-check" className="p-button-success" onClick={addTask} />
-        </Dialog>
-    );
+
 
     const renderTasksGrid = () => (
         <TasksPage></TasksPage>
@@ -223,14 +175,7 @@ const Group = () => {
                     <div className="main-container" style={{display: 'flex'}}>
                         <div className="groupe-container" style={{flex: 1}}>
                             <h3>Задачи</h3>
-                            <Button
-                                label="Создать задачу"
-                                icon="pi pi-plus"
-                                className="p-button-success"
-                                onClick={() => setShowTaskDialog(true)}
-                            />
                             {renderTasksGrid()}
-                            {renderTaskDialog()}
                         </div>
                         <UsersList users={users} style={{width: '300px'}}/>
                     </div>
@@ -245,7 +190,7 @@ const Group = () => {
             case 'settings':
                 return (
                     <div className="groupe-container">
-                        <h2>Панель администратора</h2>
+                        <h2>Панель администратора группы {group.id}</h2>
                         <AdminPanel
                             group={group}
                             tasks={tasks}

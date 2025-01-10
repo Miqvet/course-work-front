@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { Button } from 'primereact/button';
 import { InputText } from 'primereact/inputtext';
+import { InputTextarea } from 'primereact/inputtextarea';
 import { Card } from 'primereact/card';
 import { Dialog } from 'primereact/dialog';
-import { DataView, DataViewLayoutOptions } from 'primereact/dataview';
+import { DataView } from 'primereact/dataview';
 import { Dropdown } from 'primereact/dropdown';
 import { Paginator } from 'primereact/paginator';
 
@@ -17,9 +18,11 @@ const Groups = () => {
         { id: 6, name: 'Группа 6', description: 'Описание 6', taskCount: 7 }
     ]); // Пример списка групп
 
-    const [layout, setLayout] = useState('list'); // Для переключения между сеткой и списком
     const [dialogVisible, setDialogVisible] = useState(false);
+    const [joinDialogVisible, setJoinDialogVisible] = useState(false);
     const [newGroupName, setNewGroupName] = useState('');
+    const [newGroupDescription, setNewGroupDescription] = useState('');
+    const [groupIdToJoin, setGroupIdToJoin] = useState('');
     const [sortKey, setSortKey] = useState(null); // Сортировка
     const [first, setFirst] = useState(0); // Пагинация
     const [rows, setRows] = useState(5);
@@ -30,14 +33,28 @@ const Groups = () => {
     ];
 
     const handleCreateGroup = () => {
-        if (newGroupName) {
-            setGroups([...groups, { id: groups.length + 1, name: newGroupName, description: '', taskCount: 0 }]);
+        if (newGroupName && newGroupDescription) {
+            setGroups([
+                ...groups,
+                {
+                    id: groups.length + 1,
+                    name: newGroupName,
+                    description: newGroupDescription,
+                    taskCount: 0
+                }
+            ]);
             setNewGroupName('');
+            setNewGroupDescription('');
             setDialogVisible(false);
         }
     };
-    const handleJoinGroup = (groupId) => {
-        console.log(`Joined group: ${groupId}`);
+
+    const handleJoinGroup = () => {
+        if (groupIdToJoin) {
+            console.log(`Joined group with ID: ${groupIdToJoin}`);
+            setGroupIdToJoin('');
+            setJoinDialogVisible(false);
+        }
     };
 
     const handleLeaveGroup = (groupId) => {
@@ -64,7 +81,6 @@ const Groups = () => {
                     style={{ marginBottom: '1rem' }}
                     footer={
                         <div className="p-d-flex p-jc-between">
-
                             <Button
                                 label="Перейти"
                                 icon="pi pi-sign-in"
@@ -80,7 +96,7 @@ const Groups = () => {
                         </div>
                     }
                 >
-                    <p>Описание группы...</p>
+                    <p>{group.description}</p>
                 </Card>
             </div>
         );
@@ -99,8 +115,8 @@ const Groups = () => {
                 <Button
                     label="Присоединиться"
                     icon="pi pi-plus"
-                    className="p-button-success p-mr-2"
-                    onClick={() => setDialogVisible(true)}
+                    className="p-button-success"
+                    onClick={() => setJoinDialogVisible(true)}
                 />
                 <Dropdown
                     value={sortKey}
@@ -109,11 +125,10 @@ const Groups = () => {
                     placeholder="Сортировать по"
                     className="p-mr-2"
                 />
-                <DataViewLayoutOptions layout={layout} onChange={(e) => setLayout(e.value)} />
             </div>
             <DataView
                 value={paginatedGroups}
-                layout={layout}
+                layout="list"
                 itemTemplate={renderGroup}
                 paginator={false}
                 className="p-mb-3"
@@ -136,6 +151,16 @@ const Groups = () => {
                         style={{ width: '100%' }}
                     />
                 </div>
+                <div className="p-field">
+                    <label htmlFor="group-description">Описание группы</label>
+                    <InputTextarea
+                        id="group-description"
+                        value={newGroupDescription}
+                        onChange={(e) => setNewGroupDescription(e.target.value)}
+                        placeholder="Введите описание"
+                        style={{ width: '100%' }}
+                    />
+                </div>
                 <Button
                     label="Создать"
                     icon="pi pi-check"
@@ -143,8 +168,33 @@ const Groups = () => {
                     onClick={handleCreateGroup}
                 />
             </Dialog>
+
+            <Dialog
+                header="Присоединиться к группе"
+                visible={joinDialogVisible}
+                style={{ width: '400px' }}
+                onHide={() => setJoinDialogVisible(false)}
+            >
+                <div className="p-field">
+                    <label htmlFor="group-id">ID группы</label>
+                    <InputText
+                        id="group-id"
+                        value={groupIdToJoin}
+                        onChange={(e) => setGroupIdToJoin(e.target.value)}
+                        placeholder="Введите ID группы"
+                        style={{ width: '100%' }}
+                    />
+                </div>
+                <Button
+                    label="Присоединиться"
+                    icon="pi pi-check"
+                    className="p-button-success"
+                    onClick={handleJoinGroup}
+                />
+            </Dialog>
         </div>
     );
 };
 
 export default Groups;
+
