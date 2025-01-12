@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from 'primereact/button';
 import { InputText } from 'primereact/inputtext';
 import { Dialog } from 'primereact/dialog';
 import { Menubar } from 'primereact/menubar';
+import { useParams } from 'react-router-dom';
 
 import {format, getDay, parse, startOfWeek} from "date-fns";
 import enUS from "date-fns/locale/en-US";
@@ -83,6 +84,7 @@ const CalendarPage = ({events}) => {
 }
 
 const Group = () => {
+    const { id } = useParams(); // Получаем id из URL
     const [events] = useState([
         { title: 'Project Kickoff', start: new Date(2025, 0, 1, 10, 0), end: new Date(2025, 0, 1, 12, 0) },
         { title: 'Team Meeting', start: new Date(2025, 0, 2, 14, 0), end: new Date(2025, 0, 2, 15, 0) },
@@ -93,20 +95,45 @@ const Group = () => {
         { title: 'Project Deadline', start: new Date(2025, 0, 7, 17, 0), end: new Date(2025, 0, 7, 18, 0) },
     ]);
 
-    const users = [
-        { name: 'Пользователь 1', role: 'Администратор' },
-        { name: 'Пользователь 2', role: 'Участник' },
-        { name: 'Пользователь 3', role: 'Участник' },
-        { name: 'Пользователь 1', role: 'Администратор' },
-        { name: 'Пользователь 2', role: 'Участник' },
-        { name: 'Пользователь 3', role: 'Участник' },
-        { name: 'Пользователь 1', role: 'Администратор' },
-        { name: 'Пользователь 2', role: 'Участник' },
-        { name: 'Пользователь 3', role: 'Участник' },
-        { name: 'Пользователь 1', role: 'Администратор' },
-        { name: 'Пользователь 2', role: 'Участник' },
-        { name: 'Пользователь 3', role: 'Участник' },
-    ];
+    const [users, setUsers] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
+
+    // Получение пользователей группы
+    const fetchGroupUsers = async () => {
+        try {
+            setLoading(true);
+            const token = localStorage.getItem('user');
+            
+            const response = await fetch(`/api/groups/${id}/users`, { // Используем id из параметров
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to fetch group users');
+            }
+
+            const data = await response.json();
+            setUsers(data.map(user => ({
+                id: user.id,
+                name: user.name,
+                role: user.role === 'ADMIN' ? 'Администратор' : 'Участник'
+            })));
+        } catch (err) {
+            setError(err.message);
+            console.error('Error fetching group users:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        if (id) { // Проверяем наличие id
+            fetchGroupUsers();
+        }
+    }, [id]); // Добавляем id в зависимости
 
     const [activeView, setActiveView] = useState('tasks');
     const [tasks, setTasks] = useState([
@@ -177,7 +204,13 @@ const Group = () => {
                             <h3>Задачи</h3>
                             {renderTasksGrid()}
                         </div>
-                        <UsersList users={users} style={{width: '300px'}}/>
+                        {loading ? (
+                            <div>Loading users...</div>
+                        ) : error ? (
+                            <div>Error: {error}</div>
+                        ) : (
+                            <UsersList users={users} style={{width: '300px'}}/>
+                        )}
                     </div>
                 );
             case 'calendar':

@@ -30,14 +30,13 @@ const localizer = dateFnsLocalizer({
 
 const App = () => {
     const menuItems = [
-        {label: 'Home', icon: 'pi pi-home', command: () => window.location = '/'},
-        {label: 'All Tasks', icon: 'pi pi-list', command: () => window.location = '/all-tasks'},
-        {label: 'Account', icon: 'pi pi-user', command: () => window.location = '/accounts'},
-        {label: 'Sign-in', icon: 'pi pi-key', command: () => window.location = '/sign-in'},
-        {label: 'Groups', icon: 'pi pi-users', command: () => window.location = '/groups'},
-        {label: 'Group', icon: 'pi pi-users', command: () => window.location = '/group'},
-        {label: 'Notification', icon: 'pi pi-bell', command: () => window.location = '/notifications'},
-        {label: "Rewards", icon: 'pi pi-sparkles', command: () => window.location = "/rewards"}, // Новый маршрут
+        { label: 'Home', icon: 'pi pi-home', command: () => window.location = '/' },
+        { label: 'All Tasks', icon: 'pi pi-list', command: () => window.location = '/all-tasks' },
+        { label: 'Account', icon: 'pi pi-user', command: () => window.location = '/accounts' },
+        { label: 'Sign-in', icon: 'pi pi-key', command: () => window.location = '/sign-in' },
+        { label: 'Groups', icon: 'pi pi-users', command: () => window.location = '/groups' },
+        { label: 'Notification', icon: 'pi pi-bell', command: () => window.location = '/notifications' },
+        { label: "Rewards", icon: 'pi pi-sparkles', command: () => window.location = "/rewards" },
     ];
 
     return (
@@ -66,8 +65,8 @@ const App = () => {
                             <PrivateRoute>
                                 <Groups/>
                             </PrivateRoute>
-                        }/>
-                        <Route path="/group" element={
+                        } />
+                        <Route path="/groups/:id" element={
                             <PrivateRoute>
                                 <Group/>
                             </PrivateRoute>
