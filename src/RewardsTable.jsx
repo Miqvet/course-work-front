@@ -1,14 +1,41 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
-import { Button } from "primereact/button";
 
 const RewardsTable = () => {
-    const rewards = [
-        { name: "Top Performer", description: "Awarded for outstanding performance.", awarded_date: "2025-01-10" },
-        { name: "Team Player", description: "Awarded for excellent teamwork.", awarded_date: "2025-01-08" },
-        { name: "Innovator", description: "Awarded for creative solutions.", awarded_date: "2025-01-05" },
-    ];
+    const [rewards, setRewards] = useState([]);
+
+    useEffect(() => {
+        const fetchRewards = async () => {
+            try {
+                const token = localStorage.getItem('user');
+                const response = await fetch('/api/rewards', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Ошибка при получении наград');
+                }
+
+                const data = await response.json();
+                // Преобразуем данные в нужный формат
+                const formattedRewards = data.map(userReward => ({
+                    name: userReward.reward.name,
+                    description: userReward.reward.description,
+                    awarded_date: new Date(userReward.awardedDate).toLocaleDateString()
+                }));
+                setRewards(formattedRewards);
+            } catch (error) {
+                console.error('Ошибка при получении наград:', error);
+            }
+        };
+
+        fetchRewards();
+    }, []);
 
     const trophyBodyTemplate = () => (
         <i className="pi pi-trophy" style={{ fontSize: "1.5rem", color: "#FFD700" }}></i>

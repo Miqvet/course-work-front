@@ -87,16 +87,12 @@ const Groups = () => {
         if (groupIdToJoin) {
             try {
                 const token = localStorage.getItem('user');
-                
                 const response = await fetch(`/api/groups/${groupIdToJoin}/members`, {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        userRole: 'MEMBER'
-                    })
+                    }
                 });
 
                 if (!response.ok) {
