@@ -11,6 +11,8 @@ import 'primereact/resources/themes/saga-blue/theme.css';
 import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
 import './App.css';
+import PrivateRoute from './components/PrivateRoute';
+import AuthService from './services/AuthService';
 
 import TasksPage from "./TaskPage";
 import AuthForm from './AuthForm';
@@ -46,14 +48,42 @@ const App = () => {
                 <Sidebar menuItems={menuItems} />
                 <div className="content-container">
                     <Routes>
-                        <Route path="/" element={<MainPage />} />
-                        <Route path="/all-tasks" element={<AllTasksPage  />} />
-                        <Route path="/accounts" element={<AccountsPage />} />
                         <Route path="/sign-in" element={<AuthForm />} />
-                        <Route path="/groups" element={<Groups />} />
-                        <Route path="/group" element={<Group />} />
-                        <Route path="/notifications" element={<NotificationTable />} /> {/* Новый маршрут */}
-                        <Route path="/rewards" element={<RewardsTable />} /> {/* Новый маршрут */}
+                        <Route path="/" element={
+                            <PrivateRoute>
+                                <MainPage />
+                            </PrivateRoute>
+                        } />
+                        <Route path="/all-tasks" element={
+                            <PrivateRoute>
+                                <AllTasksPage />
+                            </PrivateRoute>
+                        } />
+                        <Route path="/accounts" element={
+                            <PrivateRoute>
+                                <AccountsPage />
+                            </PrivateRoute>
+                        } />
+                        <Route path="/groups" element={
+                            <PrivateRoute>
+                                <Groups />
+                            </PrivateRoute>
+                        } />
+                        <Route path="/group" element={
+                            <PrivateRoute>
+                                <Group />
+                            </PrivateRoute>
+                        } />
+                        <Route path="/notifications" element={
+                            <PrivateRoute>
+                                <NotificationTable />
+                            </PrivateRoute>
+                        } />
+                        <Route path="/rewards" element={
+                            <PrivateRoute>
+                                <RewardsTable />
+                            </PrivateRoute>
+                        } />
                     </Routes>
                 </div>
             </div>
