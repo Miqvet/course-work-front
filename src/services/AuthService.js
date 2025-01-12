@@ -16,7 +16,7 @@ class AuthService {
         
         const data = await response.json();
         if (data.token) {
-            localStorage.setItem('user', JSON.stringify(data));
+            localStorage.setItem('user', data.token);
         }
         return data;
     }
@@ -47,12 +47,12 @@ class AuthService {
     }
 
     getCurrentUser() {
-        return JSON.parse(localStorage.getItem('user'));
+        return localStorage.getItem('user');
     }
 
     isAuthenticated() {
-        const user = this.getCurrentUser();
-        return !!user?.token;
+        const token = this.getCurrentUser();
+        return !!token;
     }
 }
 

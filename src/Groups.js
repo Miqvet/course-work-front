@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from 'primereact/button';
 import { InputText } from 'primereact/inputtext';
 import { InputTextarea } from 'primereact/inputtextarea';
@@ -9,15 +9,7 @@ import { Dropdown } from 'primereact/dropdown';
 import { Paginator } from 'primereact/paginator';
 
 const Groups = () => {
-    const [groups, setGroups] = useState([
-        { id: 1, name: 'Группа 1', description: 'Описание 1', taskCount: 5 },
-        { id: 2, name: 'Группа 2', description: 'Описание 2', taskCount: 2 },
-        { id: 3, name: 'Группа 3', description: 'Описание 3', taskCount: 8 },
-        { id: 4, name: 'Группа 4', description: 'Описание 4', taskCount: 1 },
-        { id: 5, name: 'Группа 5', description: 'Описание 5', taskCount: 10 },
-        { id: 6, name: 'Группа 6', description: 'Описание 6', taskCount: 7 }
-    ]); // Пример списка групп
-
+    const [groups, setGroups] = useState([]);
     const [dialogVisible, setDialogVisible] = useState(false);
     const [joinDialogVisible, setJoinDialogVisible] = useState(false);
     const [newGroupName, setNewGroupName] = useState('');
@@ -27,38 +19,131 @@ const Groups = () => {
     const [first, setFirst] = useState(0); // Пагинация
     const [rows, setRows] = useState(5);
 
+    useEffect(() => {
+        const fetchGroups = async () => {
+            try {
+                const token = localStorage.getItem('user');
+                
+                const response = await fetch('/api/groups', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Ошибка сети');
+                }
+
+                const data = await response.json();
+                setGroups(data);
+            } catch (error) {
+                console.error('Ошибка при получении групп:', error);
+            }
+        };
+
+        fetchGroups();
+    }, []);
+
     const sortOptions = [
         { label: 'По имени', value: 'name' },
         { label: 'По количеству задач', value: 'taskCount' }
     ];
 
-    const handleCreateGroup = () => {
+    const handleCreateGroup = async () => {
         if (newGroupName && newGroupDescription) {
-            setGroups([
-                ...groups,
-                {
-                    id: groups.length + 1,
-                    name: newGroupName,
-                    description: newGroupDescription,
-                    taskCount: 0
+            try {
+                const token = localStorage.getItem('user');
+                
+                const response = await fetch('/api/groups', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        name: newGroupName,
+                        description: newGroupDescription
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Ошибка при создании группы');
                 }
-            ]);
-            setNewGroupName('');
-            setNewGroupDescription('');
-            setDialogVisible(false);
+
+                const newGroup = await response.json();
+                setGroups([...groups, newGroup]);
+                setNewGroupName('');
+                setNewGroupDescription('');
+                setDialogVisible(false);
+            } catch (error) {
+                console.error('Ошибка при создании группы:', error);
+            }
         }
     };
 
-    const handleJoinGroup = () => {
+    const handleJoinGroup = async () => {
         if (groupIdToJoin) {
-            console.log(`Joined group with ID: ${groupIdToJoin}`);
-            setGroupIdToJoin('');
-            setJoinDialogVisible(false);
+            try {
+                const token = localStorage.getItem('user');
+                
+                const response = await fetch(`/api/groups/${groupIdToJoin}/members`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        userRole: 'MEMBER'
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Ошибка при присоединении к группе');
+                }
+
+                // Обновляем список групп после успешного присоединения
+                const fetchGroupsResponse = await fetch('/api/groups', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (fetchGroupsResponse.ok) {
+                    const updatedGroups = await fetchGroupsResponse.json();
+                    setGroups(updatedGroups);
+                }
+
+                setGroupIdToJoin('');
+                setJoinDialogVisible(false);
+            } catch (error) {
+                console.error('Ошибка при присоединении к группе:', error);
+            }
         }
     };
 
-    const handleLeaveGroup = (groupId) => {
-        console.log(`Left group: ${groupId}`);
+    const handleLeaveGroup = async (groupId) => {
+        try {
+            const token = localStorage.getItem('user');
+            
+            const response = await fetch(`/api/groups/${groupId}/delete`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Ошибка при выходе из группы');
+            }
+
+            setGroups(groups.filter(group => group.id !== groupId));
+        } catch (error) {
+            console.error('Ошибка при выходе из группы:', error);
+        }
     };
 
     const onPageChange = (event) => {
@@ -85,7 +170,7 @@ const Groups = () => {
                                 label="Перейти"
                                 icon="pi pi-sign-in"
                                 className="p-button-text"
-                                onClick={() => handleJoinGroup(group.id)}
+                                onClick={() => window.location.href = `/groups/${group.id}`}
                             />
                             <Button
                                 label="Выйти"
