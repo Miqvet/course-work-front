@@ -8,7 +8,7 @@ import { useParams } from 'react-router-dom';
 import {format, getDay, parse, startOfWeek} from "date-fns";
 import enUS from "date-fns/locale/en-US";
 
-import './Group.css'; // Подключаем CSS для стилей
+import './Group.css';
 import TasksPage from "./TaskPage";
 import AdminPanel from "./AdminPanel";
 
@@ -188,8 +188,6 @@ const Group = () => {
     const deleteTask = (taskId) => {
         setTasks(tasks.filter((task) => task.id !== taskId));
     };
-
-
 
     const renderTasksGrid = () => (
         <TasksPage></TasksPage>

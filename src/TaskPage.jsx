@@ -117,7 +117,7 @@ const TasksGrid = ({tasks, toggleTaskCompletion, deleteTask}) => {
                     {/*    </select>*/}
                     {/*</div>*/}
                     <div>
-                        <label htmlFor="filterByGroup">Фильтр по группе1:</label>
+                        <label htmlFor="filterByGroup">Фильтр по группе:</label>
                         <select
                             id="filterByGroup"
                             value={filterByGroup}
