@@ -75,7 +75,7 @@ const AdminPanel = ({
             const updatedMember = {...selectedMember, role: selectedRole};
             onUpdateGroup({
                 ...group,
-                members: group.members.map((m) => (m.id === updatedMember.id ? updatedMember : m)),
+                members: group.members.map((m) => (m.id == updatedMember.id ? updatedMember : m)),
             });
             setRoleDialogVisible(false);
         }

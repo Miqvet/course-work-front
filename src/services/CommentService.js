@@ -1,4 +1,4 @@
-const API_URL = '/api/public/comments/';
+const API_URL = '/api/public/comments';
 
 class CommentService {
     async createComment(commentData) {
@@ -19,7 +19,7 @@ class CommentService {
     }
 
     async getTaskComments(taskId) {
-        const response = await fetch(`${API_URL}task/${taskId}`, {
+        const response = await fetch(`${API_URL}/task/${taskId}`, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('user')}`
@@ -34,7 +34,7 @@ class CommentService {
     }
 
     async updateComment(commentId, newComment) {
-        const response = await fetch(`${API_URL}${commentId}`, {
+        const response = await fetch(`${API_URL}/${commentId}`, {
             method: 'PUT',
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('user')}`,
@@ -51,7 +51,7 @@ class CommentService {
     }
 
     async deleteComment(commentId) {
-        const response = await fetch(`${API_URL}${commentId}`, {
+        const response = await fetch(`${API_URL}/${commentId}`, {
             method: 'DELETE',
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('user')}`

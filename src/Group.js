@@ -27,8 +27,8 @@ const localizer = dateFnsLocalizer({
 const UsersList = ({ users }) => {
     // Подсчет статистики
     const totalUsers = users.length;
-    const totalAdmins = users.filter(user => user.role === 'Администратор').length;
-    const totalParticipants = users.filter(user => user.role === 'Участник').length;
+    const totalAdmins = users.filter(user => user.role == 'Администратор').length;
+    const totalParticipants = users.filter(user => user.role == 'Участник').length;
 
     const getRoleStyle = (role) => {
         switch (role) {
@@ -155,7 +155,7 @@ const Group = () => {
     };
 
     const toggleTaskCompletion = (taskId) => {
-        setTasks(tasks.map((task) => (task.id === taskId ? { ...task, completed: !task.completed } : task)));
+        setTasks(tasks.map((task) => (task.id == taskId ? { ...task, completed: !task.completed } : task)));
     };
 
     const deleteTask = (taskId) => {
