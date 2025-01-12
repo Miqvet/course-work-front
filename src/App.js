@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
 import { Menu } from 'primereact/menu';
 import { Button } from 'primereact/button';
@@ -103,11 +103,55 @@ const Sidebar = ({ menuItems }) => {
     );
 };
 
-const AllTasksPage = ({tasks}) => {
+const AllTasksPage = () => {
+    // const [tasks, setTasks] = useState([]);
+    // const [loading, setLoading] = useState(false);
+    // const [error, setError] = useState(null);
+
+    // const fetchUserTasks = async () => {
+    //     try {
+    //         setLoading(true);
+    //         const token = localStorage.getItem('user');
+    //         const userEmail = localStorage.getItem('userEmail');
+    //         const response = await fetch(`/api/tasks/user/${localStorage.getItem('userId')}`, {
+    //             headers: {
+    //                 'Authorization': `Bearer ${token}`
+    //             }
+    //         });
+
+    //         if (!response.ok) {
+    //             throw new Error('Failed to fetch tasks');
+    //         }
+
+    //         const data = await response.json();
+    //         // Преобразуем данные в нужный формат
+    //         const formattedTasks = data.map(task => ({
+    //             id: task.id,
+    //             title: task.title,
+    //             description: task.description,
+    //             deadline: task.deadline ? new Date(task.deadline).toISOString().split('T')[0] : '',
+    //             completed: task.isCompleted,
+    //             group: task.group || 'Без группы',
+    //             priority: task.currentPriority
+    //         }));
+            
+    //         setTasks(formattedTasks);
+    //     } catch (err) {
+    //         setError(err.message);
+    //         console.error('Error fetching tasks:', err);
+    //     } finally {
+    //         setLoading(false);
+    //     }
+    // };
     return (
         <div className="main-page">
             <h1>Все ваши задачи</h1>
-            <TasksPage></TasksPage>
+            <TasksPage 
+                // tasks={tasks} 
+                // loading={loading}
+                // error={error}
+                // onTasksUpdate={fetchUserTasks}
+            />
         </div>
     );
 }
@@ -141,14 +185,72 @@ const MainPage = () => {
 
 const AccountsPage = () => {
     const [userDetails, setUserDetails] = useState({
-        firstname: 'johndoe',
-        lastname: 'ASDasa',
-        email: 'johndoe@example.com'
+        firstName: '',
+        lastName: '',
+        email: ''
     });
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
-    const updateUserDetail = (field, value) => {
-        setUserDetails((prevDetails) => ({ ...prevDetails, [field]: value }));
+    useEffect(() => {
+        const fetchUserDetails = async () => {
+            try {
+                const token = localStorage.getItem('user');
+                const response = await fetch('/api/users/current', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to fetch user details');
+                }
+
+                const data = await response.json();
+                setUserDetails(data);
+            } catch (err) {
+                setError(err.message);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchUserDetails();
+    }, []);
+
+    const updateUserDetail = async (field, value) => {
+        try {
+            const token = localStorage.getItem('user');
+            const response = await fetch('/api/users/current', {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    ...userDetails,
+                    [field]: value
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to update user details');
+            }
+
+            const updatedUser = await response.json();
+            setUserDetails(updatedUser);
+        } catch (err) {
+            setError(err.message);
+        }
     };
+
+    if (loading) {
+        return <div>Loading...</div>;
+    }
+
+    if (error) {
+        return <div>Error: {error}</div>;
+    }
 
     return (
         <div className="accounts-page">
@@ -156,20 +258,24 @@ const AccountsPage = () => {
             <div className="account-details">
                 <div className="field">
                     <label>Firstname: </label>
-                    <InputText value={userDetails.firstname}
-                               onChange={(e) => updateUserDetail('firstname', e.target.value)}/>
+                    <InputText 
+                        value={userDetails.firstName}
+                        onChange={(e) => updateUserDetail('firstName', e.target.value)}
+                    />
                 </div>
                 <div className="field">
                     <label>Lastname: </label>
-                    <InputText value={userDetails.lastname}
-                               onChange={(e) => updateUserDetail('lastname', e.target.value)}/>
+                    <InputText 
+                        value={userDetails.lastName}
+                        onChange={(e) => updateUserDetail('lastName', e.target.value)}
+                    />
                 </div>
                 <div className="field">
                     <label>Email: </label>
-                    <InputText value={userDetails.email} onChange={(e) => updateUserDetail('email', e.target.value)}/>
-                </div>
-                <div className="update-buttons">
-                    <Button label="Save Changes" className="p-button-success"/>
+                    <InputText 
+                        value={userDetails.email} 
+                        disabled={true}
+                    />
                 </div>
             </div>
         </div>
