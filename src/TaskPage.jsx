@@ -4,7 +4,8 @@ import {Dialog} from 'primereact/dialog';
 import {InputText} from 'primereact/inputtext';
 import {Button} from 'primereact/button';
 import {Paginator} from 'primereact/paginator';
-import './TaskPage.css'; // Подключаем CSS
+import './TaskPage.css';
+import TaskService from "./services/TaskService"; // Подключаем CSS
 
 const TaskDialog = ({showTaskDialog, setShowTaskDialog, newTask, setNewTask, addTask}) => {
     return (
@@ -117,7 +118,7 @@ const TasksGrid = ({tasks, toggleTaskCompletion, deleteTask}) => {
                     {/*    </select>*/}
                     {/*</div>*/}
                     <div>
-                        <label htmlFor="filterByGroup">Фильтр по группе1:</label>
+                        <label htmlFor="filterByGroup">Фильтр по группе:</label>
                         <select
                             id="filterByGroup"
                             value={filterByGroup}
@@ -187,43 +188,16 @@ const TasksGrid = ({tasks, toggleTaskCompletion, deleteTask}) => {
     );
 };
 
-const TasksPage = () => {
+const TasksPage = ({groupId}) => {
     const [tasks, setTasks] = useState([]);
     const [showTaskDialog, setShowTaskDialog] = useState(false);
     const [newTask, setNewTask] = useState({title: '', description: '', deadline: '', group: '', completed: false});
 
     useEffect(() => {
         const fetchTasks = async () => {
-            try {
-                const response = await fetch('/api/tasks', {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('user')}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-
-                if (!response.ok) {
-                    throw new Error('Не удалось получить задачи');
-                }
-
-                const data = await response.json();
-                const formattedData = data.map(userTask => ({
-                    id: userTask.id,
-                    taskId: userTask.taskId,
-                    group: userTask.group || 'Без группы',
-                    title: userTask.title,
-                    description: userTask.description,
-                    priority: userTask.priority,
-                    deadline: userTask.deadline ? new Date(userTask.deadline).toISOString().split('T')[0] : '',
-                    completed: userTask.completed,
-                }));
-                setTasks(formattedData);
-            } catch (error) {
-                console.error('Ошибка при получении задач:', error);
-            }
+            const data = await TaskService.getUserTasks();
+            setTasks(groupId ? data.filter(task => task.group == groupId) : data);
         };
-
         fetchTasks();
     }, []);
 

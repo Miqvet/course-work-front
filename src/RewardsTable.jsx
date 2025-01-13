@@ -22,13 +22,12 @@ const RewardsTable = () => {
                 }
 
                 const data = await response.json();
-                // Преобразуем данные в нужный формат
-                const formattedRewards = data.map(userReward => ({
+                const formattedData = data.map(userReward => ({
                     name: userReward.reward.name,
                     description: userReward.reward.description,
                     awarded_date: new Date(userReward.awardedDate).toLocaleDateString()
                 }));
-                setRewards(formattedRewards);
+                setRewards(formattedData);
             } catch (error) {
                 console.error('Ошибка при получении наград:', error);
             }

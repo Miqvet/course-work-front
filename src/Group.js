@@ -1,31 +1,30 @@
-import React, { useState, useEffect } from 'react';
-import { Button } from 'primereact/button';
-import { InputText } from 'primereact/inputtext';
-import { Dialog } from 'primereact/dialog';
-import { Menubar } from 'primereact/menubar';
-import { useParams } from 'react-router-dom';
+import React, {useEffect, useState} from 'react';
+import {Menubar} from 'primereact/menubar';
+import {useParams} from 'react-router-dom';
 
 import {format, getDay, parse, startOfWeek} from "date-fns";
 import enUS from "date-fns/locale/en-US";
 
 import './Group.css';
+import './Group.css';
 import TasksPage from "./TaskPage";
 import AdminPanel from "./AdminPanel";
 
 import {Calendar, dateFnsLocalizer} from "react-big-calendar";
+import TaskService from "./services/TaskService";
 
 
-const locales = { 'en-US': enUS };
+const locales = {'en-US': enUS};
 const localizer = dateFnsLocalizer({
     format,
     parse,
-    startOfWeek: () => startOfWeek(new Date(), { weekStartsOn: 0 }),
+    startOfWeek: () => startOfWeek(new Date(), {weekStartsOn: 0}),
     getDay,
     locales
 });
 
 
-const UsersList = ({ users }) => {
+const UsersList = ({users}) => {
     // Подсчет статистики
     const totalUsers = users.length;
     const totalAdmins = users.filter(user => user.role == 'Администратор').length;
@@ -34,13 +33,13 @@ const UsersList = ({ users }) => {
     const getRoleStyle = (role) => {
         switch (role) {
             case 'Администратор':
-                return { backgroundColor: '#007bff', color: '#fff' }; // Синий для администратора
+                return {backgroundColor: '#007bff', color: '#fff'}; // Синий для администратора
             case 'Участник':
-                return { backgroundColor: '#28a745', color: '#fff' }; // Зеленый для участника
+                return {backgroundColor: '#28a745', color: '#fff'}; // Зеленый для участника
             case 'Гость':
-                return { backgroundColor: '#ffc107', color: '#fff' }; // Желтый для гостя
+                return {backgroundColor: '#ffc107', color: '#fff'}; // Желтый для гостя
             default:
-                return { backgroundColor: '#6c757d', color: '#fff' }; // Серый для остальных
+                return {backgroundColor: '#6c757d', color: '#fff'}; // Серый для остальных
         }
     };
 
@@ -82,21 +81,21 @@ const CalendarPage = ({events}) => {
             localizer={localizer}
             events={events}
             startAccessor="start"
-            endAccessor="end" style={{ height: 600 }}
+            endAccessor="end" style={{height: 600}}
         />
     );
 }
 
 const Group = () => {
-    const { id } = useParams(); // Получаем id из URL
+    const {id} = useParams(); // Получаем id из URL
     const [events] = useState([
-        { title: 'Project Kickoff', start: new Date(2025, 0, 1, 10, 0), end: new Date(2025, 0, 1, 12, 0) },
-        { title: 'Team Meeting', start: new Date(2025, 0, 2, 14, 0), end: new Date(2025, 0, 2, 15, 0) },
-        { title: 'Submit Report', start: new Date(2025, 0, 3, 9, 0), end: new Date(2025, 0, 3, 11, 0) },
-        { title: 'Client Presentation', start: new Date(2025, 0, 4, 13, 0), end: new Date(2025, 0, 4, 14, 30) },
-        { title: 'Code Review', start: new Date(2025, 0, 5, 16, 0), end: new Date(2025, 0, 5, 17, 0) },
-        { title: 'Workshop', start: new Date(2025, 0, 6, 10, 0), end: new Date(2025, 0, 6, 12, 0) },
-        { title: 'Project Deadline', start: new Date(2025, 0, 7, 17, 0), end: new Date(2025, 0, 7, 18, 0) },
+        {title: 'Project Kickoff', start: new Date(2025, 0, 1, 10, 0), end: new Date(2025, 0, 1, 12, 0)},
+        {title: 'Team Meeting', start: new Date(2025, 0, 2, 14, 0), end: new Date(2025, 0, 2, 15, 0)},
+        {title: 'Submit Report', start: new Date(2025, 0, 3, 9, 0), end: new Date(2025, 0, 3, 11, 0)},
+        {title: 'Client Presentation', start: new Date(2025, 0, 4, 13, 0), end: new Date(2025, 0, 4, 14, 30)},
+        {title: 'Code Review', start: new Date(2025, 0, 5, 16, 0), end: new Date(2025, 0, 5, 17, 0)},
+        {title: 'Workshop', start: new Date(2025, 0, 6, 10, 0), end: new Date(2025, 0, 6, 12, 0)},
+        {title: 'Project Deadline', start: new Date(2025, 0, 7, 17, 0), end: new Date(2025, 0, 7, 18, 0)},
     ]);
 
     const [users, setUsers] = useState([]);
@@ -110,6 +109,8 @@ const Group = () => {
             const token = localStorage.getItem('user');
             
             const response = await fetch(`/api/groups/${id}/users`, {
+
+            const response = await fetch(`/api/groups/${id}/users`, { // Используем id из параметров
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -170,26 +171,22 @@ const Group = () => {
     }, [id]);
 
     const [activeView, setActiveView] = useState('tasks');
-    const [tasks, setTasks] = useState([
-        { id: 1, title: 'Задача 1', label: "задача 1", description: 'Описание задачи 1', deadline: '2025-01-15', completed: false },
-        { id: 2, title: 'Задача 2', label: "задача 2", description: 'Описание задачи 2', deadline: '2025-01-20', completed: true },
-        { id: 3, title: 'Задача 1', label: "задача 3", description: 'Описание задачи 1', deadline: '2025-01-15', completed: false },
-        { id: 4, title: 'Задача 2',label: "задача 4", description: 'Описание задачи 2', deadline: '2025-01-20', completed: true },
-        { id: 5, title: 'Задача 1',label: "задача 5", description: 'Описание задачи 1', deadline: '2025-01-15', completed: false },
-        { id: 6, title: 'Задача 2',label: "задача 6", description: 'Описание задачи 2', deadline: '2025-01-20', completed: true },
-        { id: 7, title: 'Задача 1',label: "задача 7", description: 'Описание задачи 1', deadline: '2025-01-15', completed: false },
-        { id: 8, title: 'Задача 2',label: "задача 8", description: 'Описание задачи 2', deadline: '2025-01-20', completed: true },
-        { id: 9, title: 'Задача 1',label: "задача 9", description: 'Описание задачи 1', deadline: '2025-01-15', completed: false },
-        { id: 10, title: 'Задача 2',label: "задача 10", description: 'Описание задачи 2', deadline: '2025-01-20', completed: true }
-
-    ]);
+    const [tasks, setTasks] = useState([]);
     const [showTaskDialog, setShowTaskDialog] = useState(false);
-    const [newTask, setNewTask] = useState({ title: '', description: '', deadline: '' });
+    const [newTask, setNewTask] = useState({title: '', description: '', deadline: '', group: '', completed: false});
+
+    useEffect(() => {
+        const fetchTasks = async () => {
+            const data = await TaskService.getUserTasks();
+            setTasks(data.filter(task => task.group == id));
+        };
+        fetchTasks();
+    }, []);
 
     const menuItems = [
-        { label: 'Главная', icon: 'pi pi-briefcase', command: () => setActiveView('tasks') },
-        { label: 'Календарь', icon: 'pi pi-calendar', command: () => setActiveView('calendar') },
-        { label: 'Настройки', icon: 'pi pi-spin pi-cog', command: () => setActiveView('settings') }
+        {label: 'Главная', icon: 'pi pi-briefcase', command: () => setActiveView('tasks')},
+        {label: 'Календарь', icon: 'pi pi-calendar', command: () => setActiveView('calendar')},
+        {label: 'Настройки', icon: 'pi pi-spin pi-cog', command: () => setActiveView('settings')}
     ];
 
     const handleUpdateGroup = async (updatedGroup) => {
@@ -232,7 +229,7 @@ const Group = () => {
     };
 
     const toggleTaskCompletion = (taskId) => {
-        setTasks(tasks.map((task) => (task.id == taskId ? { ...task, completed: !task.completed } : task)));
+        setTasks(tasks.map((task) => (task.id == taskId ? {...task, completed: !task.completed} : task)));
     };
 
     const deleteTask = (taskId) => {
@@ -240,7 +237,7 @@ const Group = () => {
     };
 
     const renderTasksGrid = () => (
-        <TasksPage></TasksPage>
+        <TasksPage groupId={group.id}></TasksPage>
     );
 
     const renderView = () => {
@@ -289,7 +286,7 @@ const Group = () => {
 
     return (
         <div className="groupe-container">
-            <Menubar model={menuItems} />
+            <Menubar model={menuItems}/>
             <div className="p-mt-3">{renderView()}</div>
         </div>
     );

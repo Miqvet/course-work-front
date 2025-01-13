@@ -16,7 +16,7 @@ import TasksPage from "./TaskPage";
 import AuthForm from './AuthForm';
 import Groups from "./Groups";
 import Group from "./Group";
-import NotificationTable from "./Notifiacation";
+import NotificationTable from "./Notification";
 import RewardsTable from "./RewardsTable";
 
 const locales = {'en-US': enUS};
@@ -30,13 +30,13 @@ const localizer = dateFnsLocalizer({
 
 const App = () => {
     const menuItems = [
-        { label: 'Home', icon: 'pi pi-home', command: () => window.location = '/' },
-        { label: 'All Tasks', icon: 'pi pi-list', command: () => window.location = '/all-tasks' },
-        { label: 'Account', icon: 'pi pi-user', command: () => window.location = '/accounts' },
-        { label: 'Sign-in', icon: 'pi pi-key', command: () => window.location = '/sign-in' },
-        { label: 'Groups', icon: 'pi pi-users', command: () => window.location = '/groups' },
-        { label: 'Notification', icon: 'pi pi-bell', command: () => window.location = '/notifications' },
-        { label: "Rewards", icon: 'pi pi-sparkles', command: () => window.location = "/rewards" },
+        {label: 'Home', icon: 'pi pi-home', command: () => window.location = '/'},
+        {label: 'All Tasks', icon: 'pi pi-list', command: () => window.location = '/all-tasks'},
+        {label: 'Account', icon: 'pi pi-user', command: () => window.location = '/accounts'},
+        // { label: 'Sign-in', icon: 'pi pi-key', command: () => window.location = '/sign-in' },
+        {label: 'Groups', icon: 'pi pi-users', command: () => window.location = '/groups'},
+        {label: 'Notification', icon: 'pi pi-bell', command: () => window.location = '/notifications'},
+        {label: "Rewards", icon: 'pi pi-sparkles', command: () => window.location = "/rewards"},
     ];
 
     return (
@@ -65,7 +65,7 @@ const App = () => {
                             <PrivateRoute>
                                 <Groups/>
                             </PrivateRoute>
-                        } />
+                        }/>
                         <Route path="/groups/:id" element={
                             <PrivateRoute>
                                 <Group/>
@@ -92,9 +92,9 @@ const Sidebar = ({menuItems}) => {
     return (
         <div className="sidebar">
             <div className="logo">
-                <img src="./logo.png" alt="Site Logo" className="menu-logo"
-                     style={{maxWidth: '30px', maxHeight: '30px', width: 'auto', height: 'auto'}}/>
-                <span>TaskTracker</span>
+                <img src="/logo.png" alt="Site Logo" className="menu-logo"
+                     style={{maxWidth: '25px', maxHeight: '25px', width: 'auto', height: 'auto', marginRight: '3px'}}/>
+                <span>HomeTracker</span>
             </div>
             <Menu model={menuItems} className="menu"/>
         </div>
