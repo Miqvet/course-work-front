@@ -179,7 +179,7 @@ const Group = () => {
             setTasks(data.filter(task => task.group == id));
         };
         fetchTasks();
-    }, []);
+    }, [id]);
 
     const menuItems = [
         {label: 'Главная', icon: 'pi pi-briefcase', command: () => setActiveView('tasks')},
@@ -235,7 +235,7 @@ const Group = () => {
     };
 
     const renderTasksGrid = () => (
-        <TasksPage groupId={group.id}></TasksPage>
+        <TasksPage groupId={id}></TasksPage>
     );
 
     const renderView = () => {

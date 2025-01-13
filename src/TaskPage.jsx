@@ -159,7 +159,7 @@ const TasksGrid = ({tasks, toggleTaskCompletion, deleteTask}) => {
                                 </p>
                                 <div className="card-buttons">
                                     <Button
-                                        label={task.completed ? 'No' : 'Yes'}
+                                        label={task.completed ? 'Вернуть' : 'Готово'}
                                         icon={task.completed ? 'pi pi-times' : 'pi pi-check'}
                                         className={task.completed ? 'p-button-secondary' : 'p-button-success'}
                                         onClick={() => toggleTaskCompletion(task.id)}
@@ -199,7 +199,7 @@ const TasksPage = ({groupId}) => {
             setTasks(groupId ? data.filter(task => task.group == groupId) : data);
         };
         fetchTasks();
-    }, []);
+    }, [groupId]);
 
     const addTask = () => {
         setTasks([...tasks, {...newTask, id: Date.now()}]);
