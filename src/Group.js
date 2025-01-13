@@ -14,6 +14,7 @@ import AdminPanel from "./AdminPanel";
 
 import {Calendar, dateFnsLocalizer} from "react-big-calendar";
 import TaskService from "./services/TaskService";
+import CommentService from "./services/CommentService";
 
 
 const locales = {'en-US': enUS};
@@ -126,18 +127,18 @@ const CalendarPage = ({events}) => {
                 }}
             />
 
-            <Dialog 
-                visible={dialogVisible} 
+            <Dialog
+                visible={dialogVisible}
                 onHide={() => setDialogVisible(false)}
                 header="Информация о задаче"
                 style={{ width: '350px' }}
                 modal
                 footer={
                     <div>
-                        <Button 
-                            label="Закрыть" 
-                            icon="pi pi-times" 
-                            onClick={() => setDialogVisible(false)} 
+                        <Button
+                            label="Закрыть"
+                            icon="pi pi-times"
+                            onClick={() => setDialogVisible(false)}
                             className="p-button-text"
                         />
                     </div>
@@ -194,18 +195,17 @@ const Group = () => {
             setLoading(false);
         }
     };
+
     const [groupDetails, setGroupDetails] = useState({
         id: id,
         name: '',
         description: ''
     });
-
     const fetchGroupDetails = async () => {
         try {
-            const token = localStorage.getItem('user');
             const response = await fetch(`/api/groups/${id}`, {
                 headers: {
-                    'Authorization': `Bearer ${token}`
+                    'Authorization': `Bearer ${localStorage.getItem('user')}`
                 }
             });
 
@@ -238,9 +238,9 @@ const Group = () => {
     useEffect(() => {
         const fetchTasks = async () => {
             const data = await TaskService.getUserTasks();
-            const filteredTasks = data.filter(task => task.group == id);
+            const filteredTasks = data.filter(task => task.group.id == id);
             setTasks(filteredTasks);
-            
+
             // Преобразуем задачи в события для календаря
             const calendarEvents = filteredTasks.map(task => ({
                 title: task.title,
@@ -260,7 +260,7 @@ const Group = () => {
         {label: 'Настройки', icon: 'pi pi-spin pi-cog', command: () => setActiveView('settings')}
     ];
 
-    const handleUpdateGroup = async (updatedGroup) => {
+    const handleUpdateGroupAdmin = async (updatedGroup) => {
         try {
             const token = localStorage.getItem('user');
             const response = await fetch(`/api/groups/${id}`, {
@@ -291,21 +291,14 @@ const Group = () => {
         }
     };
 
-    const handleAssignTask = (task, member) => {
+    const handleAssignTaskAdmin = (task, member) => {
         alert(`Задача "${task.title}" назначена участнику "${member.name}"`);
     };
 
-    const handleDeleteTask = (taskId) => {
-        setTasks(tasks.filter((task) => task.id !== taskId));
+    const handleDeleteTaskAdmin = async (taskId) => {
+        await TaskService.deleteTask(taskId)
+        setTasks(tasks.filter((task) => task.id != taskId));
         alert("Задача удалена!");
-    };
-
-    const toggleTaskCompletion = (taskId) => {
-        setTasks(tasks.map((task) => (task.id == taskId ? {...task, completed: !task.completed} : task)));
-    };
-
-    const deleteTask = (taskId) => {
-        setTasks(tasks.filter((task) => task.id !== taskId));
     };
 
     const renderTasksGrid = () => (
@@ -346,10 +339,9 @@ const Group = () => {
                             group={groupDetails}
                             tasks={tasks}
                             members={users}
-                            onUpdateGroup={handleUpdateGroup}
-                            onAssignTask={handleAssignTask}
-                            onDeleteTask={handleDeleteTask}
-    
+                            onUpdateGroup={handleUpdateGroupAdmin}
+                            onAssignTask={handleAssignTaskAdmin}
+                            onDeleteTask={handleDeleteTaskAdmin}
                         />
                     </div>
                 );

@@ -136,7 +136,7 @@ const Groups = () => {
                 throw new Error('Ошибка при выходе из группы');
             }
 
-            setGroups(groups.filter(group => group.id !== groupId));
+            setGroups(groups.filter(group => group.id != groupId));
         } catch (error) {
             console.error('Ошибка при выходе из группы:', error);
         }

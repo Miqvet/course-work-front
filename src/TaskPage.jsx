@@ -5,7 +5,8 @@ import {InputText} from 'primereact/inputtext';
 import {Button} from 'primereact/button';
 import {Paginator} from 'primereact/paginator';
 import './TaskPage.css';
-import TaskService from "./services/TaskService"; // Подключаем CSS
+import TaskService from "./services/TaskService";
+import {Dropdown} from "primereact/dropdown";
 
 const TaskDialog = ({showTaskDialog, setShowTaskDialog, newTask, setNewTask, addTask}) => {
     return (
@@ -57,36 +58,12 @@ const TaskDialog = ({showTaskDialog, setShowTaskDialog, newTask, setNewTask, add
     );
 };
 
-const TasksGrid = ({tasks, toggleTaskCompletion, deleteTask}) => {
-    const [sortBy, setSortBy] = useState('deadline');
-    const [sortOrder, setSortOrder] = useState('asc');
-    const [filterByGroup, setFilterByGroup] = useState('');
+const TasksGrid = ({tasks, toggleTaskToComplete}) => {
+    const [filterByGroup, setFilterByGroup] = useState(null);
+    const filteredTasks = tasks.filter(task => !filterByGroup || task.group.id == filterByGroup.id);
+
     const [currentPage, setCurrentPage] = useState(0);
     const tasksPerPage = 10;
-
-    const sortedTasks = [...tasks].sort((a, b) => {
-        if (sortBy == 'deadline') {
-            return sortOrder == 'asc'
-                ? new Date(a.deadline) - new Date(b.deadline)
-                : new Date(b.deadline) - new Date(a.deadline);
-        }
-        if (sortBy == 'group') {
-            return sortOrder == 'asc'
-                ? a.group.localeCompare(b.group)
-                : b.group.localeCompare(a.group);
-        }
-        if (sortBy == 'status') {
-            return sortOrder == 'asc'
-                ? a.completed - b.completed
-                : b.completed - a.completed;
-        }
-        return 0;
-    });
-
-    const filteredTasks = filterByGroup
-        ? sortedTasks.filter(task => task.group == filterByGroup)
-        : sortedTasks;
-
     const startIndex = currentPage * tasksPerPage;
     const visibleTasks = filteredTasks.slice(startIndex, startIndex + tasksPerPage);
 
@@ -96,42 +73,12 @@ const TasksGrid = ({tasks, toggleTaskCompletion, deleteTask}) => {
         <div className="tasks-grid-container">
             <div className="control-panel">
                 <div className="filter-sort">
-                    {/*<div>*/}
-                    {/*    <label htmlFor="sortBy">Сортировать по:</label>*/}
-                    {/*    <select*/}
-                    {/*        id="sortBy"*/}
-                    {/*        value={sortBy}*/}
-                    {/*        onChange={(e) => setSortBy(e.target.value)}*/}
-                    {/*        className="control-select"*/}
-                    {/*    >*/}
-                    {/*        <option value="deadline">Дедлайн</option>*/}
-                    {/*        <option value="group">Группа</option>*/}
-                    {/*        <option value="status">Статус</option>*/}
-                    {/*    </select>*/}
-                    {/*    <select*/}
-                    {/*        value={sortOrder}*/}
-                    {/*        onChange={(e) => setSortOrder(e.target.value)}*/}
-                    {/*        className="control-select"*/}
-                    {/*    >*/}
-                    {/*        <option value="asc">По возрастанию</option>*/}
-                    {/*        <option value="desc">По убыванию</option>*/}
-                    {/*    </select>*/}
-                    {/*</div>*/}
                     <div>
                         <label htmlFor="filterByGroup">Фильтр по группе:</label>
-                        <select
-                            id="filterByGroup"
-                            value={filterByGroup}
-                            onChange={(e) => setFilterByGroup(e.target.value)}
-                            className="control-select"
-                        >
-                            <option value="">Все группы</option>
-                            {[...new Set(tasks.map(task => task.group))].map(group => (
-                                <option key={group} value={group}>
-                                    {group}
-                                </option>
-                            ))}
-                        </select>
+                        <Dropdown value={filterByGroup}
+                                  onChange={(e) => setFilterByGroup(e.value)}
+                                  placeholder="Все группы" options={[...new Map(tasks.map(task => [task.group.id, task.group])).values()]}
+                                  optionLabel="name" showClear className="w-full md:w-14rem" />
                     </div>
                 </div>
             </div>
@@ -155,20 +102,18 @@ const TasksGrid = ({tasks, toggleTaskCompletion, deleteTask}) => {
                                     <strong>Дедлайн:</strong> {task.deadline}
                                 </p>
                                 <p>
-                                    <strong>Группа:</strong> {task.group}
+                                    <strong>Группа:</strong> {task.group.name}
                                 </p>
                                 <div className="card-buttons">
                                     <Button
-                                        label={task.completed ? 'Вернуть' : 'Готово'}
-                                        icon={task.completed ? 'pi pi-times' : 'pi pi-check'}
+                                        label={task.completed ? 'Выполнено' : 'Готово'}
+                                        disabled={task.completed}
+                                        icon={'pi pi-check'}
                                         className={task.completed ? 'p-button-secondary' : 'p-button-success'}
-                                        onClick={() => toggleTaskCompletion(task.id)}
-                                    />
-                                    <Button
-                                        label="Удалить"
-                                        icon="pi pi-trash"
-                                        className="p-button-danger"
-                                        onClick={() => deleteTask(task.id)}
+                                        onClick={() => {
+                                            if (!task.completed)
+                                                toggleTaskToComplete(task.id)
+                                        }}
                                     />
                                 </div>
                             </Card>
@@ -196,7 +141,7 @@ const TasksPage = ({groupId}) => {
     useEffect(() => {
         const fetchTasks = async () => {
             const data = await TaskService.getUserTasks();
-            setTasks(groupId ? data.filter(task => task.group == groupId) : data);
+            setTasks(groupId ? data.filter(task => task.group.id == groupId) : data);
         };
         fetchTasks();
     }, [groupId]);
@@ -207,16 +152,17 @@ const TasksPage = ({groupId}) => {
         setShowTaskDialog(false);
     };
 
-    const toggleTaskCompletion = (id) => setTasks(tasks.map(task => (task.id == id ? {
-        ...task,
-        completed: !task.completed
-    } : task)));
-
-    const deleteTask = (id) => setTasks(tasks.filter(task => task.id !== id));
+    const toggleTaskToComplete = async (taskId) => {
+        await TaskService.completeUserTask(taskId)
+        setTasks(tasks.map(task => (task.id == taskId ? {
+            ...task,
+            completed: true
+        } : task)));
+    };
 
     return (
         <div className="tasks-page">
-            <TasksGrid tasks={tasks} toggleTaskCompletion={toggleTaskCompletion} deleteTask={deleteTask}/>
+            <TasksGrid tasks={tasks} toggleTaskToComplete={toggleTaskToComplete}/>
         </div>
     );
 };

@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, {useEffect, useState} from "react";
 import {Dialog} from "primereact/dialog";
 import {InputText} from "primereact/inputtext";
 import {Button} from "primereact/button";
@@ -6,6 +6,8 @@ import {Dropdown} from "primereact/dropdown";
 import {DataTable} from "primereact/datatable";
 import {Column} from "primereact/column";
 import {Card} from "primereact/card";
+import CommentService from "./services/CommentService";
+import TaskService from "./services/TaskService";
 
 const AdminPanel = ({
                         id,
@@ -36,21 +38,18 @@ const AdminPanel = ({
     const [commentsDialogVisible, setCommentsDialogVisible] = useState(false);
 
     const [categories, setCategories] = useState([
-        {id: 1, name: "Категория 1", description: "Описание категории 1"},
-        {id: 2, name: "Категория 2", description: "Описание категории 2"},
+        {id: 1, name: "Кухня", description: "Кухонные дела"},
+        {id: 2, name: "Животные", description: "Животные дела"},
     ]);
 
-    const comments = [
-        {createdAt: "2025-01-09T10:30:00", text: "This task needs to be completed by tomorrow."},
-        {createdAt: "2025-01-09T14:45:00", text: "Ensure to verify all details before submission."},
-        {createdAt: "2025-01-10T09:15:00", text: "Task review completed, ready for final steps."},
-        {createdAt: "2025-01-09T10:30:00", text: "This task needs to be completed by tomorrow."},
-        {createdAt: "2025-01-09T14:45:00", text: "Ensure to verify all details before submission."},
-        {createdAt: "2025-01-10T09:15:00", text: "Task review completed, ready for final steps."},
-        {createdAt: "2025-01-09T10:30:00", text: "This task needs to be completed by tomorrow."},
-        {createdAt: "2025-01-09T14:45:00", text: "Ensure to verify all details before submission."},
-        {createdAt: "2025-01-10T09:15:00", text: "Task review completed, ready for final steps."},
-    ];
+    const [selectedTaskComments, setSelectedTaskComments] = useState([]);
+    useEffect(() => {
+        const fetchComments = async () => {
+            const data = await CommentService.getTaskComments(selectedTask.id);
+            setSelectedTaskComments(data);
+        };
+        fetchComments();
+    }, [selectedTask]);
 
     const [taskForm, setTaskForm] = useState({
         category: null,
@@ -77,12 +76,12 @@ const AdminPanel = ({
         if (selectedMember && selectedRole) {
             try {
                 console.log('Group ID:', id);
-                
+
                 const roleMapping = {
                     'Администратор': 'ADMIN',
                     'Участник': 'MEMBER'
                 };
-                
+
                 const token = localStorage.getItem('user');
                 const response = await fetch(`/api/groups/${id}/update_role/${selectedMember.id}`, {
                     method: 'PUT',
@@ -204,19 +203,20 @@ const AdminPanel = ({
     const renderCommentsDialog = () => {
         return (
             <Dialog
-                header={`Comments for Task`}
+                header={`Комментарии к задаче`}
                 visible={commentsDialogVisible}
                 style={{width: "50vw"}}
                 onHide={() => setCommentsDialogVisible(false)}
             >
                 <div className="comments-container">
-                    {comments.map((comment, index) => (
+                    {selectedTaskComments.map((comment, index) => (
                         <Card
                             key={index}
                             title={new Date(comment.createdAt).toLocaleString()}
+                            subTitle={comment.user.firstName + " " + comment.user.lastName}
                             style={{marginBottom: "1rem"}}
                         >
-                            <p>{comment.text}</p>
+                            <p>{comment.comment}</p>
                         </Card>
                     ))}
                 </div>

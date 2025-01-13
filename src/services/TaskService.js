@@ -17,7 +17,7 @@ class TaskService {
         const formattedData = data.map(userTask => ({
             id: userTask.id,
             taskId: userTask.taskId,
-            group: userTask.group || 'Без группы',
+            group: userTask.group,
             title: userTask.title,
             description: userTask.description,
             priority: userTask.priority,
@@ -25,6 +25,33 @@ class TaskService {
             completed: userTask.completed,
         }));
         return formattedData;
+    }
+
+    async deleteTask(taskId) {
+        const response = await fetch(`${API_URL}/${taskId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('user')}`
+            },
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to delete task');
+        }
+    }
+
+    async completeUserTask(taskId) {
+        const response = await fetch(`${API_URL}/${taskId}/complete`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('user')}`
+            },
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to complete task');
+        }
+
     }
 }
 
