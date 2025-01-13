@@ -8,14 +8,14 @@ import {Column} from "primereact/column";
 import {Card} from "primereact/card";
 
 const AdminPanel = ({
+                        id,
                         group,
                         tasks,
                         members,
                         onUpdateGroup,
                         onDeleteTask,
                         onCreateTask,
-                        onUpdateTask,
-                        onDeleteMember
+                        onUpdateTask
                     }) => {
     const [groupDescription, setGroupDescription] = useState(group.description);
     const [groupName, setGroupName] = useState(group.name);
@@ -64,7 +64,7 @@ const AdminPanel = ({
     });
     const [createTaskDialogVisible, setCreateTaskDialogVisible] = useState(false);
 
-    const roles = ["User", "Administrator"];
+    const roles = ["Участник", "Администратор"];
 
     const handleRenameGroup = () => {
         onUpdateGroup({
@@ -73,20 +73,80 @@ const AdminPanel = ({
         });
     };
 
-    const handleChangeRole = () => {
+    const handleChangeRole = async () => {
         if (selectedMember && selectedRole) {
-            const updatedMember = {...selectedMember, role: selectedRole};
-            onUpdateGroup({
-                ...group,
-                members: group.members.map((m) => (m.id == updatedMember.id ? updatedMember : m)),
-            });
-            setRoleDialogVisible(false);
+            try {
+                console.log('Group ID:', id);
+                
+                const roleMapping = {
+                    'Администратор': 'ADMIN',
+                    'Участник': 'MEMBER'
+                };
+                
+                const token = localStorage.getItem('user');
+                const response = await fetch(`/api/groups/${id}/update_role/${selectedMember.id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ role: roleMapping[selectedRole] })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to update role');
+                }
+                setRoleDialogVisible(false);
+            } catch (err) {
+                console.error('Error updating role:', err);
+                alert("Ошибка при обновлении роли");
+            }
         }
     };
-    const handleAssignTask = () => {
-        console.log("Человек: " + selectedPerson.name + " получил задачу " + selectedTask.title)
-        setAssignTaskDialogVisible(false);
-    }
+
+    const handleDeleteMember = async (memberId) => {
+        try {
+            const token = localStorage.getItem('user');
+            const response = await fetch(`/api/groups/${id}/delete_member/${memberId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to delete member');
+            }
+        } catch (err) {
+            console.error('Error deleting member:', err);
+            alert("Ошибка при удалении участника");
+        }
+    };
+
+    const handleAssignTask = async () => {
+        if (selectedPerson && selectedTask) {
+            try {
+                const token = localStorage.getItem('user');
+                const response = await fetch(`/api/tasks/${selectedTask.id}/assign/${selectedPerson.id}`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to assign task');
+                }
+
+                alert(`Задача "${selectedTask.title}" назначена участнику ${selectedPerson.firstName} ${selectedPerson.lastName}`);
+                setAssignTaskDialogVisible(false);
+            } catch (err) {
+                console.error('Error assigning task:', err);
+                alert("Ошибка при назначении задачи");
+            }
+        }
+    };
 
     const handleCreateCategory = () => {
         setCategories([...categories, {...newCategory, id: categories.length + 1}]);
@@ -211,10 +271,11 @@ const AdminPanel = ({
                 <label htmlFor="task">Выберите задачу</label>
                 <Dropdown
                     id="task"
-                    value={null}
+                    value={selectedTask}
                     options={tasks}
                     onChange={(e) => setSelectedTask(e.value)}
-                    placeholder="выберите задачу"
+                    optionLabel="title"
+                    placeholder="Выберите задачу"
                 />
             </div>
             <Button
@@ -455,7 +516,7 @@ const AdminPanel = ({
                                 label=""
                                 icon="pi pi-trash"
                                 className="p-button-danger"
-                                onClick={() => onDeleteMember(member.id)}
+                                onClick={() => handleDeleteMember(member.id)}
                             />
                             <Button
                                 label=""

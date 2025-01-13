@@ -133,6 +133,7 @@ const Group = () => {
         }
     };
     const [groupDetails, setGroupDetails] = useState({
+        id: id,
         name: '',
         description: ''
     });
@@ -208,6 +209,7 @@ const Group = () => {
 
             const data = await response.json();
             setGroupDetails({
+                id: id,
                 name: data.name,
                 description: data.description
             });
@@ -268,12 +270,14 @@ const Group = () => {
                     <div className="groupe-container">
                         <h2>Панель администратора группы {id}</h2>
                         <AdminPanel
+                            id={id}
                             group={groupDetails}
                             tasks={tasks}
                             members={users}
                             onUpdateGroup={handleUpdateGroup}
                             onAssignTask={handleAssignTask}
                             onDeleteTask={handleDeleteTask}
+    
                         />
                     </div>
                 );
