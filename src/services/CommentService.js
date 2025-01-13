@@ -1,4 +1,4 @@
-const API_URL = '/api/public/comments';
+const API_URL = '/api/comments';
 
 class CommentService {
     async createComment(commentData) {

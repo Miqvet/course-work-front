@@ -22,13 +22,13 @@ const NotificationTable = () => {
                 }
 
                 const data = await response.json();
-                const formatedData = data.map(notification => ({
+                const formattedData = data.map(notification => ({
                     title: notification.title,
                     description: notification.description,
                     date: new Date(notification.date).toLocaleDateString(),
                     groupId: notification.groupId
                 }));
-                setNotifications(formatedData);
+                setNotifications(formattedData);
             } catch (error) {
                 console.error('Ошибка при получении уведомлений:', error);
             }
