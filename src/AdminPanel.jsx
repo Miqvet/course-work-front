@@ -47,8 +47,10 @@ const AdminPanel = ({
     const [selectedTaskComments, setSelectedTaskComments] = useState([]);
     useEffect(() => {
         const fetchComments = async () => {
-            const data = await CommentService.getTaskComments(selectedTask.id);
-            setSelectedTaskComments(data);
+            if (id) {
+                const data = await CommentService.getTaskComments(selectedTask.id);
+                setSelectedTaskComments(data);
+            }
         };
         fetchComments();
     }, [selectedTask]);

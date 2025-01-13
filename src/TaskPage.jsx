@@ -7,6 +7,8 @@ import {Paginator} from 'primereact/paginator';
 import './TaskPage.css';
 import TaskService from "./services/TaskService";
 import {Dropdown} from "primereact/dropdown";
+import CommentService from "./services/CommentService";
+import { InputTextarea } from "primereact/inputtextarea";
 
 const TaskDialog = ({showTaskDialog, setShowTaskDialog, newTask, setNewTask, addTask}) => {
     return (
@@ -67,7 +69,18 @@ const TasksGrid = ({tasks, toggleTaskToComplete}) => {
     const startIndex = currentPage * tasksPerPage;
     const visibleTasks = filteredTasks.slice(startIndex, startIndex + tasksPerPage);
 
+    const [commentDialogVisible, setCommentDialogVisible] = useState(false);
+    const [commentText, setCommentText] = useState('');
+    const [selectedTask, setSelectedTask] = useState(null);
+
     const onPageChange = (e) => setCurrentPage(e.page);
+
+    const handleCommentTask = async (taskId) => {
+        await CommentService.createComment({taskId: taskId, comment: commentText});
+        alert("Комментарий оставлен");
+        setCommentDialogVisible(false);
+        setCommentText("");
+    };
 
     return (
         <div className="tasks-grid-container">
@@ -115,6 +128,15 @@ const TasksGrid = ({tasks, toggleTaskToComplete}) => {
                                                 toggleTaskToComplete(task.id)
                                         }}
                                     />
+                                    <Button
+                                        label=""
+                                        icon="pi pi-pencil"
+                                        className="p-button-primary"
+                                        onClick={() => {
+                                            setSelectedTask(task);
+                                            setCommentDialogVisible(true);
+                                        }}
+                                    />
                                 </div>
                             </Card>
                         </div>
@@ -129,6 +151,24 @@ const TasksGrid = ({tasks, toggleTaskToComplete}) => {
                 onPageChange={onPageChange}
                 className="paginator"
             />
+
+            <Dialog
+                header="Написать комментарий"
+                visible={commentDialogVisible}
+                style={{ width: '400px' }}
+                onHide={() => {setCommentDialogVisible(false); setCommentText("");}}
+            >
+                <div className="p-field">
+                    <label htmlFor="comment">Текст комментария</label>
+                    <InputTextarea id="comment" value={commentText} onChange={(e) => setCommentText(e.target.value)} rows={5} cols={30} />
+                </div>
+                <Button
+                    label="Оставить комментарий"
+                    icon="pi pi-check"
+                    className="p-button-success"
+                    onClick={() => handleCommentTask(selectedTask.id)}
+                />
+            </Dialog>
         </div>
     );
 };
