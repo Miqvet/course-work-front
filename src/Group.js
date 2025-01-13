@@ -107,8 +107,6 @@ const Group = () => {
         try {
             setLoading(true);
             const token = localStorage.getItem('user');
-            
-            const response = await fetch(`/api/groups/${id}/users`, {
 
             const response = await fetch(`/api/groups/${id}/users`, { // Используем id из параметров
                 headers: {
