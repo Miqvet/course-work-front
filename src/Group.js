@@ -1,6 +1,8 @@
 import React, {useEffect, useState} from 'react';
 import {Menubar} from 'primereact/menubar';
 import {useParams} from 'react-router-dom';
+import { Dialog } from 'primereact/dialog';
+import { Button } from 'primereact/button';
 
 import {format, getDay, parse, startOfWeek} from "date-fns";
 import enUS from "date-fns/locale/en-US";
@@ -76,28 +78,88 @@ const UsersList = ({users}) => {
 };
 
 const CalendarPage = ({events}) => {
+    const [selectedEvent, setSelectedEvent] = useState(null);
+    const [dialogVisible, setDialogVisible] = useState(false);
+
+    const handleEventSelect = (event) => {
+        setSelectedEvent(event);
+        setDialogVisible(true);
+    };
+
     return (
-        <Calendar
-            localizer={localizer}
-            events={events}
-            startAccessor="start"
-            endAccessor="end" style={{height: 600}}
-        />
+        <div>
+            <Calendar
+                localizer={localizer}
+                events={events}
+                startAccessor="start"
+                endAccessor="end"
+                style={{
+                    height: 600,
+                    margin: '20px',
+                    backgroundColor: 'white',
+                    padding: '10px',
+                    borderRadius: '8px',
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                }}
+                views={['month', 'week', 'day', 'agenda']}
+                defaultView='month'
+                eventPropGetter={event => ({
+                    style: {
+                        backgroundColor: event.completed ? '#d4edda' : '#f8d7da',
+                        borderRadius: '3px',
+                        color: 'black',
+                        padding: '2px 5px'
+                    }
+                })}
+                tooltipAccessor={event => `${event.title} - ${event.description || 'Нет описания'}`}
+                popup
+                selectable
+                onSelectEvent={handleEventSelect}
+                messages={{
+                    next: "Следующий",
+                    previous: "Предыдущий",
+                    today: "Сегодня",
+                    month: "Месяц",
+                    week: "Неделя",
+                    day: "День",
+                    agenda: "Список"
+                }}
+            />
+
+            <Dialog 
+                visible={dialogVisible} 
+                onHide={() => setDialogVisible(false)}
+                header="Информация о задаче"
+                style={{ width: '350px' }}
+                modal
+                footer={
+                    <div>
+                        <Button 
+                            label="Закрыть" 
+                            icon="pi pi-times" 
+                            onClick={() => setDialogVisible(false)} 
+                            className="p-button-text"
+                        />
+                    </div>
+                }
+            >
+                {selectedEvent && (
+                    <div>
+                        <h3>{selectedEvent.title}</h3>
+                        <p><strong>Описание:</strong> {selectedEvent.description || 'Нет описания'}</p>
+                        <p><strong>Статус:</strong> {selectedEvent.completed ? 'Выполнено' : 'В процессе'}</p>
+                        <p><strong>Дата:</strong> {selectedEvent.start.toLocaleDateString()}</p>
+                    </div>
+                )}
+            </Dialog>
+        </div>
     );
-}
+};
 
 const Group = () => {
     const {id} = useParams(); // Получаем id из URL
-    const [events] = useState([
-        {title: 'Project Kickoff', start: new Date(2025, 0, 1, 10, 0), end: new Date(2025, 0, 1, 12, 0)},
-        {title: 'Team Meeting', start: new Date(2025, 0, 2, 14, 0), end: new Date(2025, 0, 2, 15, 0)},
-        {title: 'Submit Report', start: new Date(2025, 0, 3, 9, 0), end: new Date(2025, 0, 3, 11, 0)},
-        {title: 'Client Presentation', start: new Date(2025, 0, 4, 13, 0), end: new Date(2025, 0, 4, 14, 30)},
-        {title: 'Code Review', start: new Date(2025, 0, 5, 16, 0), end: new Date(2025, 0, 5, 17, 0)},
-        {title: 'Workshop', start: new Date(2025, 0, 6, 10, 0), end: new Date(2025, 0, 6, 12, 0)},
-        {title: 'Project Deadline', start: new Date(2025, 0, 7, 17, 0), end: new Date(2025, 0, 7, 18, 0)},
-    ]);
-
+    const [tasks, setTasks] = useState([]);
+    const [events, setEvents] = useState([]);
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
@@ -170,14 +232,24 @@ const Group = () => {
     }, [id]);
 
     const [activeView, setActiveView] = useState('tasks');
-    const [tasks, setTasks] = useState([]);
     const [showTaskDialog, setShowTaskDialog] = useState(false);
     const [newTask, setNewTask] = useState({title: '', description: '', deadline: '', group: '', completed: false});
 
     useEffect(() => {
         const fetchTasks = async () => {
             const data = await TaskService.getUserTasks();
-            setTasks(data.filter(task => task.group == id));
+            const filteredTasks = data.filter(task => task.group == id);
+            setTasks(filteredTasks);
+            
+            // Преобразуем задачи в события для календаря
+            const calendarEvents = filteredTasks.map(task => ({
+                title: task.title,
+                start: new Date(task.deadline),
+                end: new Date(task.deadline),
+                description: task.description,
+                completed: task.completed
+            }));
+            setEvents(calendarEvents);
         };
         fetchTasks();
     }, [id]);

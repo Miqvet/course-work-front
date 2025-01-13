@@ -18,6 +18,9 @@ import Groups from "./Groups";
 import Group from "./Group";
 import NotificationTable from "./Notification";
 import RewardsTable from "./RewardsTable";
+import TaskService from './services/TaskService';
+import {Dialog} from 'primereact/dialog';
+import {Button} from 'primereact/button';
 
 const locales = {'en-US': enUS};
 const localizer = dateFnsLocalizer({
@@ -111,27 +114,103 @@ const AllTasksPage = () => {
 }
 
 const MainPage = () => {
-    const [events] = useState([
-        {title: 'Project Kickoff', start: new Date(2025, 0, 1, 10, 0), end: new Date(2025, 0, 1, 12, 0)},
-        {title: 'Team Meeting', start: new Date(2025, 0, 2, 14, 0), end: new Date(2025, 0, 2, 15, 0)},
-        {title: 'Submit Report', start: new Date(2025, 0, 3, 9, 0), end: new Date(2025, 0, 3, 11, 0)},
-        {title: 'Client Presentation', start: new Date(2025, 0, 4, 13, 0), end: new Date(2025, 0, 4, 14, 30)},
-        {title: 'Code Review', start: new Date(2025, 0, 5, 16, 0), end: new Date(2025, 0, 5, 17, 0)},
-        {title: 'Workshop', start: new Date(2025, 0, 6, 10, 0), end: new Date(2025, 0, 6, 12, 0)},
-        {title: 'Project Deadline', start: new Date(2025, 0, 7, 17, 0), end: new Date(2025, 0, 7, 18, 0)},
-    ]);
+    const [events, setEvents] = useState([]);
+    const [selectedEvent, setSelectedEvent] = useState(null);
+    const [dialogVisible, setDialogVisible] = useState(false);
+
+    useEffect(() => {
+        const fetchTasks = async () => {
+            try {
+                const tasks = await TaskService.getUserTasks();
+                const calendarEvents = tasks.map(task => ({
+                    title: task.title,
+                    start: new Date(task.deadline),
+                    end: new Date(task.deadline),
+                    description: task.description,
+                    completed: task.completed
+                }));
+                setEvents(calendarEvents);
+            } catch (error) {
+                console.error('Error fetching tasks:', error);
+            }
+        };
+
+        fetchTasks();
+    }, []);
+
+    const handleEventSelect = (event) => {
+        setSelectedEvent(event);
+        setDialogVisible(true);
+    };
 
     return (
         <div className="main-page">
             <h1>Welcome</h1>
-            <div className="calendar-container">
+            <div className="calendar-container" style={{ padding: '20px' }}>
                 <Calendar
                     localizer={localizer}
                     events={events}
                     startAccessor="start"
                     endAccessor="end"
-                    style={{height: 600}}
+                    style={{
+                        height: 600,
+                        margin: '20px',
+                        backgroundColor: 'white',
+                        padding: '10px',
+                        borderRadius: '8px',
+                        boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                    }}
+                    views={['month', 'week', 'day', 'agenda']}
+                    defaultView='month'
+                    eventPropGetter={event => ({
+                        style: {
+                            backgroundColor: event.completed ? '#d4edda' : '#f8d7da',
+                            borderRadius: '3px',
+                            color: 'black',
+                            padding: '2px 5px'
+                        }
+                    })}
+                    tooltipAccessor={event => `${event.title} - ${event.description || 'Нет описания'}`}
+                    popup
+                    selectable
+                    onSelectEvent={handleEventSelect}
+                    messages={{
+                        next: "Следующий",
+                        previous: "Предыдущий",
+                        today: "Сегодня",
+                        month: "Месяц",
+                        week: "Неделя",
+                        day: "День",
+                        agenda: "Список"
+                    }}
                 />
+
+                <Dialog 
+                    visible={dialogVisible} 
+                    onHide={() => setDialogVisible(false)}
+                    header="Информация о задаче"
+                    style={{ width: '350px' }}
+                    modal
+                    footer={
+                        <div>
+                            <Button 
+                                label="Закрыть" 
+                                icon="pi pi-times" 
+                                onClick={() => setDialogVisible(false)} 
+                                className="p-button-text"
+                            />
+                        </div>
+                    }
+                >
+                    {selectedEvent && (
+                        <div>
+                            <h3>{selectedEvent.title}</h3>
+                            <p><strong>Описание:</strong> {selectedEvent.description || 'Нет описания'}</p>
+                            <p><strong>Статус:</strong> {selectedEvent.completed ? 'Выполнено' : 'В процессе'}</p>
+                            <p><strong>Дата:</strong> {selectedEvent.start.toLocaleDateString()}</p>
+                        </div>
+                    )}
+                </Dialog>
             </div>
         </div>
     );
