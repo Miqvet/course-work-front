@@ -9,6 +9,10 @@ import {Card} from "primereact/card";
 import CommentService from "./services/CommentService";
 import TaskService from "./services/TaskService";
 import CategoryService from "./services/CategoryService";
+import { Calendar } from 'primereact/calendar';
+import { InputTextarea } from 'primereact/inputtextarea';
+import { Checkbox } from 'primereact/checkbox';
+import { InputNumber } from 'primereact/inputnumber';
 
 const AdminPanel = ({
                         id,
@@ -53,15 +57,26 @@ const AdminPanel = ({
         category: null,
         title: "",
         description: "",
-        deadline: "",
+        deadline: null,
         priority: 1,
-        status: "",
         is_repeated: false,
-        repeated_period: ""
+        repeated_period: null
     });
     const [createTaskDialogVisible, setCreateTaskDialogVisible] = useState(false);
 
     const roles = ["Участник", "Администратор"];
+
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                const data = await CategoryService.getAllCategories();
+                setCategories(data);
+            } catch (error) {
+                console.error('Error fetching categories:', error);
+            }
+        };
+        fetchCategories();
+    }, []);
 
     const handleRenameGroup = () => {
         onUpdateGroup({
@@ -160,19 +175,34 @@ const AdminPanel = ({
         }
     };
 
-    const handleCreateTask = () => {
-        onCreateTask(taskForm);
-        setCreateTaskDialogVisible(false);
-        setTaskForm({
-            category: null,
-            title: "",
-            description: "",
-            deadline: "",
-            priority: 1,
-            status: "",
-            is_repeated: false,
-            repeated_period: ""
-        });
+    const handleCreateTask = async () => {
+        try {
+            const createdTask = await TaskService.createTask(id, {
+                title: taskForm.title,
+                description: taskForm.description,
+                priority: taskForm.priority,
+                deadline: taskForm.deadline,
+                is_repeated: taskForm.is_repeated,
+                repeated_period: taskForm.repeated_period,
+                category: taskForm.category
+            });
+            
+            onCreateTask(createdTask);
+            
+            setCreateTaskDialogVisible(false);
+            setTaskForm({
+                category: null,
+                title: "",
+                description: "",
+                deadline: null,
+                priority: 1,
+                is_repeated: false,
+                repeated_period: null
+            });
+        } catch (error) {
+            console.error('Error creating task:', error);
+            alert("Ошибка при создании задачи");
+        }
     };
 
     const handleUpdateTask = () => {
@@ -388,95 +418,110 @@ const AdminPanel = ({
             modal
             onHide={() => setCreateTaskDialogVisible(false)}
         >
-            <div className="p-field">
-                <label htmlFor="category">Категория</label>
-                <Dropdown
-                    id="category"
-                    value={taskForm.category}
-                    options={categories}
-                    onChange={(e) => setTaskForm({...taskForm, category: e.value})}
-                    optionLabel="name"
-                    placeholder="Выберите категорию"
+            <div className="p-fluid">
+                <div className="p-field mb-3">
+                    <label htmlFor="category">Категория</label>
+                    <Dropdown
+                        id="category"
+                        value={taskForm.category}
+                        options={categories}
+                        onChange={(e) => setTaskForm({...taskForm, category: e.value})}
+                        optionLabel="name"
+                        placeholder="Выберите категорию"
+                        className="w-100"
+                    />
+                </div>
+
+                <div className="p-field mb-3">
+                    <label htmlFor="title">Название задачи*</label>
+                    <InputText
+                        id="title"
+                        value={taskForm.title}
+                        onChange={(e) => setTaskForm({...taskForm, title: e.target.value})}
+                        required
+                        className="w-100"
+                    />
+                </div>
+
+                <div className="p-field mb-3">
+                    <label htmlFor="description">Описание</label>
+                    <InputTextarea
+                        id="description"
+                        value={taskForm.description}
+                        onChange={(e) => setTaskForm({...taskForm, description: e.target.value})}
+                        rows={3}
+                        className="w-100"
+                    />
+                </div>
+
+                <div className="p-field mb-3">
+                    <label htmlFor="deadline">Дедлайн*</label>
+                    <Calendar
+                        id="deadline"
+                        value={taskForm.deadline ? new Date(taskForm.deadline) : null}
+                        onChange={(e) => setTaskForm({...taskForm, deadline: e.value?.toISOString()})}
+                        showTime
+                        dateFormat="dd/mm/yy"
+                        className="w-100"
+                        placeholder="Выберите дату и время"
+                    />
+                </div>
+
+                <div className="p-field mb-3">
+                    <label htmlFor="priority">Приоритет</label>
+                    <Dropdown
+                        id="priority"
+                        value={taskForm.priority}
+                        options={[
+                            {label: 'Низкий', value: 1},
+                            {label: 'Средний', value: 2},
+                            {label: 'Высокий', value: 3}
+                        ]}
+                        onChange={(e) => setTaskForm({...taskForm, priority: e.value})}
+                        className="w-100"
+                    />
+                </div>
+
+                <div className="p-field-checkbox mb-3">
+                    <Checkbox
+                        inputId="is_repeated"
+                        checked={taskForm.is_repeated}
+                        onChange={(e) => setTaskForm({...taskForm, is_repeated: e.checked})}
+                    />
+                    <label htmlFor="is_repeated" className="ml-2">Повторяющаяся задача</label>
+                </div>
+
+                {taskForm.is_repeated && (
+                    <div className="p-field mb-3">
+                        <label htmlFor="repeated_period">Период повторения (в днях)</label>
+                        <InputNumber
+                            id="repeated_period"
+                            value={taskForm.repeated_period}
+                            onValueChange={(e) => setTaskForm({...taskForm, repeated_period: e.value})}
+                            min={1}
+                            className="w-100"
+                        />
+                    </div>
+                )}
+            </div>
+
+            <div className="p-dialog-footer">
+                <Button
+                    label="Отмена"
+                    icon="pi pi-times"
+                    className="p-button-text"
+                    onClick={() => setCreateTaskDialogVisible(false)}
+                />
+                <Button
+                    label="Создать задачу"
+                    icon="pi pi-check"
+                    className="p-button-success"
+                    onClick={handleCreateTask}
+                    disabled={!taskForm.title || !taskForm.deadline}
                 />
             </div>
-            <div className="p-field">
-                <label htmlFor="title">Название</label>
-                <InputText
-                    id="title"
-                    value={taskForm.title}
-                    onChange={(e) => setTaskForm({...taskForm, title: e.target.value})}
-                />
-            </div>
-            <div className="p-field">
-                <label htmlFor="description">Описание</label>
-                <InputText
-                    id="description"
-                    value={taskForm.description}
-                    onChange={(e) => setTaskForm({...taskForm, description: e.target.value})}
-                />
-            </div>
-            <div className="p-field">
-                <label htmlFor="deadline">Дедлайн</label>
-                <InputText
-                    id="deadline"
-                    value={taskForm.deadline}
-                    onChange={(e) => setTaskForm({...taskForm, deadline: e.target.value})}
-                />
-            </div>
-            <div className="p-field">
-                <label htmlFor="priority">Приоритет</label>
-                <InputText
-                    id="priority"
-                    type="number"
-                    value={taskForm.priority}
-                    onChange={(e) => setTaskForm({...taskForm, priority: +e.target.value})}
-                />
-            </div>
-            <div className="p-field">
-                <label htmlFor="status">Статус</label>
-                <InputText
-                    id="status"
-                    value={taskForm.status}
-                    onChange={(e) => setTaskForm({...taskForm, status: e.target.value})}
-                />
-            </div>
-            <div className="p-field">
-                <label htmlFor="is_repeated">Повторяется</label>
-                <Dropdown
-                    id="is_repeated"
-                    value={taskForm.is_repeated}
-                    options={[{label: "Да", value: true}, {label: "Нет", value: false}]}
-                    onChange={(e) => setTaskForm({...taskForm, is_repeated: e.value})}
-                />
-            </div>
-            <div className="p-field">
-                <label htmlFor="repeated_period">Период повторения в днях</label>
-                <InputText
-                    id="repeated_period"
-                    value={taskForm.repeated_period}
-                    onChange={(e) => setTaskForm({...taskForm, repeated_period: e.target.value})}
-                />
-            </div>
-            <Button
-                label="Создать задачу"
-                icon="pi pi-check"
-                className="p-button-success"
-                onClick={handleCreateTask}
-            />
         </Dialog>
     );
-
-    useEffect(() => {
-        const fetchCategories = async () => {
-            try {
-                const data = await CategoryService.getAllCategories();
-                setCategories(data);
-            } catch (error) {
-                console.error('Error fetching categories:', error);
-            }
-        };
-        fetchCategories();
-    }, []);
 
     return (
         <div>
