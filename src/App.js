@@ -40,6 +40,14 @@ const App = () => {
         {label: 'Groups', icon: 'pi pi-users', command: () => window.location = '/groups'},
         {label: 'Notification', icon: 'pi pi-bell', command: () => window.location = '/notifications'},
         {label: "Rewards", icon: 'pi pi-sparkles', command: () => window.location = "/rewards"},
+        {
+            label: 'Выйти', 
+            icon: 'pi pi-sign-out', 
+            command: () => {
+                localStorage.removeItem('user');
+                window.location = '/sign-in';
+            }
+        }
     ];
 
     return (
