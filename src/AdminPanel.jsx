@@ -8,6 +8,7 @@ import {Column} from "primereact/column";
 import {Card} from "primereact/card";
 import CommentService from "./services/CommentService";
 import TaskService from "./services/TaskService";
+import CategoryService from "./services/CategoryService";
 
 const AdminPanel = ({
                         id,
@@ -37,10 +38,7 @@ const AdminPanel = ({
 
     const [commentsDialogVisible, setCommentsDialogVisible] = useState(false);
 
-    const [categories, setCategories] = useState([
-        {id: 1, name: "Кухня", description: "Кухонные дела"},
-        {id: 2, name: "Животные", description: "Животные дела"},
-    ]);
+    const [categories, setCategories] = useState([]);
 
     const [selectedTaskComments, setSelectedTaskComments] = useState([]);
     useEffect(() => {
@@ -147,10 +145,19 @@ const AdminPanel = ({
         }
     };
 
-    const handleCreateCategory = () => {
-        setCategories([...categories, {...newCategory, id: categories.length + 1}]);
-        setNewCategory({name: "", description: ""});
-        setCategoryDialogVisible(false);
+    const handleCreateCategory = async () => {
+        try {
+            const createdCategory = await CategoryService.createCategory({
+                name: newCategory.name,
+                description: newCategory.description
+            });
+            setCategories([...categories, createdCategory]);
+            setNewCategory({name: "", description: ""});
+            setCategoryDialogVisible(false);
+        } catch (error) {
+            console.error('Error creating category:', error);
+            alert("Ошибка при создании категории");
+        }
     };
 
     const handleCreateTask = () => {
@@ -458,6 +465,18 @@ const AdminPanel = ({
             />
         </Dialog>
     );
+
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                const data = await CategoryService.getAllCategories();
+                setCategories(data);
+            } catch (error) {
+                console.error('Error fetching categories:', error);
+            }
+        };
+        fetchCategories();
+    }, []);
 
     return (
         <div>
