@@ -47,7 +47,7 @@ const AdminPanel = ({
     const [selectedTaskComments, setSelectedTaskComments] = useState([]);
     useEffect(() => {
         const fetchComments = async () => {
-            if (id) {
+            if (selectedTask) {
                 const data = await CommentService.getTaskComments(selectedTask.id);
                 setSelectedTaskComments(data);
             }
@@ -638,12 +638,12 @@ const AdminPanel = ({
                                     setTaskDialogVisible(true);
                                 }}
                             />
-                            <Button
-                                label=""
-                                icon="pi pi-trash"
-                                className="p-button-danger"
-                                onClick={() => onDeleteTask(task.id)}
-                            />
+                            {/*<Button*/}
+                            {/*    label=""*/}
+                            {/*    icon="pi pi-trash"*/}
+                            {/*    className="p-button-danger"*/}
+                            {/*    onClick={() => onDeleteTask(task.id)}*/}
+                            {/*/>*/}
                             <Button
                                 label=""
                                 icon="pi pi-comments"
