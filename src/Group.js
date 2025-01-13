@@ -8,7 +8,7 @@ import { useParams } from 'react-router-dom';
 import {format, getDay, parse, startOfWeek} from "date-fns";
 import enUS from "date-fns/locale/en-US";
 
-import './Group.css'; // Подключаем CSS для стилей
+import './Group.css';
 import TasksPage from "./TaskPage";
 import AdminPanel from "./AdminPanel";
 
@@ -55,9 +55,13 @@ const UsersList = ({ users }) => {
             <ul className="users-list">
                 {users.map((user) => (
                     <li key={user.id} className="user-item">
-                        <div className="user-avatar">{user.name[0]}</div>
+                        <div className="user-avatar">
+                            {user.firstName ? user.firstName[0] : '?'}
+                        </div>
                         <div className="user-details">
-                            <div className="user-name">{user.name}</div>
+                            <div className="user-name">
+                                {`${user.firstName} ${user.lastName}`}
+                            </div>
                             <div
                                 className="user-role"
                                 style={getRoleStyle(user.role)}
@@ -105,7 +109,7 @@ const Group = () => {
             setLoading(true);
             const token = localStorage.getItem('user');
             
-            const response = await fetch(`/api/groups/${id}/users`, { // Используем id из параметров
+            const response = await fetch(`/api/groups/${id}/users`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -118,7 +122,8 @@ const Group = () => {
             const data = await response.json();
             setUsers(data.map(user => ({
                 id: user.id,
-                name: user.name,
+                firstName: `${user.firstName}`,
+                lastName: `${user.lastName}`,
                 role: user.role === 'ADMIN' ? 'Администратор' : 'Участник'
             })));
         } catch (err) {
@@ -128,12 +133,41 @@ const Group = () => {
             setLoading(false);
         }
     };
+    const [groupDetails, setGroupDetails] = useState({
+        name: '',
+        description: ''
+    });
+
+    const fetchGroupDetails = async () => {
+        try {
+            const token = localStorage.getItem('user');
+            const response = await fetch(`/api/groups/${id}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to fetch group details');
+            }
+
+            const data = await response.json();
+            setGroupDetails({
+                name: data.name,
+                description: data.description
+            });
+        } catch (err) {
+            setError(err.message);
+            console.error('Error fetching group details:', err);
+        }
+    };
 
     useEffect(() => {
-        if (id) { // Проверяем наличие id
+        if (id) {
+            fetchGroupDetails();
             fetchGroupUsers();
         }
-    }, [id]); // Добавляем id в зависимости
+    }, [id]);
 
     const [activeView, setActiveView] = useState('tasks');
     const [tasks, setTasks] = useState([
@@ -158,18 +192,34 @@ const Group = () => {
         { label: 'Настройки', icon: 'pi pi-spin pi-cog', command: () => setActiveView('settings') }
     ];
 
-    const [group, setGroup] = useState({
-        id: 1,
-        name: "Команда мечты",
-        members: [
-            { id: 1, name: "Иван Иванов", role: "User" },
-            { id: 2, name: "Мария Петрова", role: "Administrator" },
-            { id: 3, name: "Сергей Сидоров", role: "User" },
-        ],
-    });
+    const handleUpdateGroup = async (updatedGroup) => {
+        try {
+            const token = localStorage.getItem('user');
+            const response = await fetch(`/api/groups/${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    name: updatedGroup.name,
+                    description: updatedGroup.description
+                })
+            });
 
-    const handleUpdateGroup = (updatedGroup) => {
-        setGroup(updatedGroup);
+            if (!response.ok) {
+                throw new Error('Failed to update group');
+            }
+
+            const data = await response.json();
+            setGroupDetails({
+                name: data.name,
+                description: data.description
+            });
+        } catch (err) {
+            console.error('Error updating group:', err);
+            alert("Ошибка при обновлении группы");
+        }
     };
 
     const handleAssignTask = (task, member) => {
@@ -188,8 +238,6 @@ const Group = () => {
     const deleteTask = (taskId) => {
         setTasks(tasks.filter((task) => task.id !== taskId));
     };
-
-
 
     const renderTasksGrid = () => (
         <TasksPage></TasksPage>
@@ -215,7 +263,7 @@ const Group = () => {
                 );
             case 'calendar':
                 return (
-                    <div className="groupe-container">
+                    <div className="groupe-container">я
                         <h3>Календарь</h3>
                         <CalendarPage events={events}/>
                     </div>
@@ -223,11 +271,11 @@ const Group = () => {
             case 'settings':
                 return (
                     <div className="groupe-container">
-                        <h2>Панель администратора группы {group.id}</h2>
+                        <h2>Панель администратора группы {id}</h2>
                         <AdminPanel
-                            group={group}
+                            group={groupDetails}
                             tasks={tasks}
-                            members={group.members}
+                            members={users}
                             onUpdateGroup={handleUpdateGroup}
                             onAssignTask={handleAssignTask}
                             onDeleteTask={handleDeleteTask}

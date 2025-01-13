@@ -67,7 +67,10 @@ const AdminPanel = ({
     const roles = ["User", "Administrator"];
 
     const handleRenameGroup = () => {
-        onUpdateGroup({...group, name: groupName});
+        onUpdateGroup({
+            name: groupName,
+            description: groupDescription
+        });
     };
 
     const handleChangeRole = () => {
@@ -427,7 +430,12 @@ const AdminPanel = ({
 
             <h3>Участники группы</h3>
             <DataTable paginator rows={5} value={members} responsiveLayout="scroll">
-                <Column field="name" header="Имя" sortable/>
+                <Column 
+                    field="name" 
+                    header="Имя" 
+                    sortable
+                    body={(member) => `${member.firstName} ${member.lastName}`}
+                />
                 <Column field="role" header="Роль" sortable/>
                 <Column
                     header="Действия"
@@ -455,8 +463,8 @@ const AdminPanel = ({
                                 className="p-button-success"
 
                                 onClick={() => {
-                                    setSelectedPerson(member)
-                                    setAssignTaskDialogVisible(true)
+                                    setSelectedPerson(member);
+                                    setAssignTaskDialogVisible(true);
                                 }}
                             />
                         </div>
